@@ -1,0 +1,304 @@
+strong{
+    font-weight: bold;
+}
+#main-container{
+    position: relative;
+}
+#main-container > h2 {
+    text-align: center;
+    text-transform: uppercase;
+}
+.card.card_link:hover {
+    background-color: orange;
+    color: yellow;
+}
+.centralizar_texto{
+    text-align: center;
+}
+.card.card_link {
+    text-align: center;
+    max-width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+    height: 183px;
+}
+.links_pagina_pincipal {
+    position: absolute;
+    bottom: 0px;
+    height: 40%;
+    overflow: hidden;
+    color: yellow;
+    width: 100%;
+}
+.logo-empresa-svg {
+    width: 169px;
+}
+.botao_cadapio_container{
+    width: 100%;
+    padding: 10px;
+}
+.col.corrigir_col_esquerda_meio_zero{
+    padding-left: 1.5rem;
+    padding-right: 0;
+}
+.col.corrigir_col_direita_meio_zero{
+    padding-left: 0;
+    padding-right: 1.5rem;    
+}
+.cardapio_e_mensagem_container.link:hover{
+    color:  grey;
+}
+.cardapio_e_mensagem_container.link:hover img{
+    filter: grayscale(100%);
+}
+.botao_cadapio_container>img, .botao_delivery_container>img{
+    width: 100%;
+}
+.botao_delivery_container{
+    max-width:187px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.cardapio_e_mensagem_container.link {
+    padding: 10px;
+    max-width: 600px;
+    margin-right: auto;
+    margin-left: auto;
+
+}
+.botao_delivery_container.link{
+    padding: 10px;
+}
+.botao_delivery_container.link:hover img{
+    filter: grayscale(100%);
+}
+.logo_pizzastr0 {stroke:black;stroke-width:0.899867}
+.logo_pizza_luiza11 {fill:none}
+.logo_pizza_luiza0 {fill:black}
+.logo_pizza_luiza3 {fill:lime}
+.logo_pizza_luiza7 {fill:#191919}
+.logo_pizza_luiza8 {fill:#99CC66}
+.logo_pizza_luiza10 {fill:#99FF00}
+.logo_pizza_luiza1 {fill:#E5E5E5}
+.logo_pizza_luiza2 {fill:red}
+.logo_pizza_luiza9 {fill:#FF9933}
+.logo_pizza_luiza5 {fill:#FF9966}
+.logo_pizza_luiza6 {fill:#FFCC00}
+.logo_pizza_luiza4 {fill:#1F1A17;fill-rule:nonzero}
+.logo_pizza_luiza12 {fill:url(#id1);fill-rule:nonzero}
+.background-empresa {
+    background-position: center;
+}
+#titulo_conhecer_cardapio{
+    font-size: 2rem;
+}
+.background-empresa {
+    background-image: url('/static-versioned/0.0.8/images/store.jpg');
+}
+/*INICIO CARDAPIO*/
+.imagem_titulo_cardapio img {
+
+    max-width: 600px;
+    width: 100%;
+
+}
+.espera_container {
+    text-align: center;
+}
+.imagem_titulo_cardapio {
+
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+
+}
+.container_cardapio_pizzaria_luiza{
+    background-image: url('/static-versioned/0.0.8/images/fundo_cardapio.jpg');
+    background-position: center;
+    background-size: 100% auto;
+    min-height: 800px;
+}
+.botao_delivery_fixo .botao_delivery_container {
+    max-width: 150px;
+}
+.botao_delivery_fixo {
+
+    position: fixed;
+    right: 10px;
+    bottom: 25px;
+    z-index: 2001;
+
+}
+/*FIM CARDAPIO*/
+
+/*INICIO ADMINISTRAÇÃO*/
+    #materialize-component-left-menu-administracao.actived {
+        background-color: #E0E0E0;
+    }
+/*FIM ADMINISTRAÇÃO*/
+/*INICIO ESTOQUE*/
+    .menu_estoque_itens.dropdown-content li {
+        text-align: center;
+    }
+    .menu_estoque_itens.dropdown-content {
+        width: 200px !important;
+    }
+    .label_menu {
+        width: 109px;
+    }
+    #tabela_lista_de_estoque .label_menu {
+        width: 34px;
+    }
+    .main-container-estoque_adicionar_no_estoque.card,
+    .main-container-estoque.card {
+        padding: 20px;
+    }
+    #tabela_lista_de_produtos .label_menu {
+        width: 109px;
+    }
+    .linha_produto_escolhido.active, .linha_fornecedor_escolhido.active{
+        background-color: #8bbf8b;
+    }
+    .imagem_produto_estoque {
+        width: 120px;
+        margin-left: auto;
+        margin-right: auto;
+        height: 120px;
+        background-color: #e7e7e7;
+        border-radius: 100%;
+        overflow: hidden;
+        text-align: center;
+    }
+    .imagem_produto_estoque img {
+        width: 100%;
+    }
+    .main-container-produto_fornecedor_escolhido.card {
+        padding: 10px;
+    }
+    #adicionar_produto_modal .fixed-action-btn,
+    #adicionar_fornecedor_modal .fixed-action-btn,
+    #adicionar_entrada_modal .fixed-action-btn{
+        position: absolute;
+        top: 71px;
+        height: 73px;
+    }
+    .main-container-estoque_adicionar_no_estoque.card, .main-container-produto_adicionar_no_produto.card {
+        padding-bottom: 67px;
+    }
+/*FIM ESTOQUE*/
+/*INICIO PRODUTO*/
+    .produto-container {
+        padding: 20px;
+    }
+    #phantervalidator-input-check-destino_novo {
+        margin-right: 23px;
+    }
+    .phantervalidator-input-check.actived-select {
+        margin-right: 23px;
+    }
+    .phantervalidator-input-check.actived-select.hasbutton {
+        margin-right: 84px;
+    }
+    .dados_estoque_escolhido {
+        color: orange;
+    }
+/*FIM PRODUTO*/
+/*CELULAR*/
+@media screen and (max-width: 600px) {
+    #main-container > h2 {
+        font-size: 2rem;
+    }
+    #lista_produtos, #lista_fornecedores {
+        overflow-x: scroll;
+    }
+    .main-footer {
+
+        padding: 1px;
+
+
+    }
+    .background-empresa {
+        background-image: url('/static-versioned/0.0.8/images/portrait.jpg');
+        background-position: center;
+        background-position-y: 0;
+    }
+    .links_pagina_pincipal {
+        height: 65%;
+    }
+    #titulo_conhecer_cardapio{
+        font-size: 1.5rem;
+    }
+    .botao_delivery_container {
+
+        max-width: 150px;
+
+    }
+    .cardapio_e_mensagem_container.link {
+
+        background-color: rgba(0,0,0,0.7);
+        border-radius: 7px;
+        margin-bottom: 20px;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto; 
+
+    }
+    .botao_cadapio_container{
+        max-width: 120px;
+    }
+    .cardapio_e_mensagem_container.link:hover{
+        background-color: rgba(174, 122, 44, 0.7);
+        color: black;
+    }
+    .cardapio_e_mensagem_container.link>.row{margin-bottom: 0px;}
+}
+/*TABLET*/
+@media screen and (min-width: 600px) and (max-width: 800px){
+    #main-container > h2 {
+        font-size: 2.5rem;
+    }
+    #lista_produtos, #lista_fornecedores {
+        overflow-x: scroll;
+    }
+    /*TABLET INICIO ADMINISTRACAO*/
+    .card-title.administracao_card-title {
+        font-size: 1.2rem;
+    }
+    /*TABLET FIM ADMINISTRACAO*/
+}
+/*DESKTOP*/
+@media screen and (min-width: 800px) and (max-width: 992px){
+    #main-container > h2 {
+        font-size: 3rem;
+    }
+    .background-empresa {
+
+        background-repeat: repeat-y;
+    }
+    #titulo_conhecer_cardapio{
+        font-size: 2.5rem;
+    }
+}
+/*DESKTOP XL*/
+@media screen and (min-width: 992px) {
+
+    .background-empresa {
+        background-position: center;
+        background-position-y: -50px;
+    }
+    .links_pagina_pincipal {
+            height: 47%;
+        }
+    #materialize-component-left-menu-user{
+        display: none;
+    }
+    #titulo_conhecer_cardapio{
+        font-size: 3rem;
+    }
+    /*DESKTOP XL INICIO ADMINISTRACAO*/
+    .card-title.administracao_card-title {
+        font-size: 1.2rem;
+    }
+    /*DESKTOP XL FIM ADMINISTRACAO*/
+}
