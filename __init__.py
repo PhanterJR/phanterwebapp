@@ -20,7 +20,7 @@ api = Api(app)
 mail = Mail(app)
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read(os.path.join(__project_folder__,'config.ini'))
 
 app.config['MAIL_SERVER'] = config['EMAIL']['mail_server']
 app.config['MAIL_PORT'] = int(config['EMAIL']['mail_port'])

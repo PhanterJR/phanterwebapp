@@ -25,7 +25,6 @@ body {
     font-family: Cousine;
     letter-spacing: -1px;
   }
-
 #menu-button-main-page:hover {
     color: orange;
 }
@@ -106,6 +105,9 @@ body {
 #left-bar.expanded {
     width: 90%;
     }
+.phanterwebbuttonpack.enabled {
+    background-color: #E0E0E0;
+}
 .main-footer{
     padding: 0;
     z-index: 1003;
@@ -238,8 +240,12 @@ body {
 #alert-top.enabled {
    opacity: 1;
 }
-.link{
+.link, .card_link{
     cursor: pointer;
+}
+.card_link:hover{
+    background-color: orange;
+    color:white;
 }
 .buttons-form-container {
     display: table;
@@ -279,7 +285,12 @@ body {
     white-space: nowrap;
     padding: 0 2% 0 2%;
 }
-
+.container-card-buttons.row {
+    text-align: center;
+}
+#main-container > h2 {
+    text-align: center;
+}
 .phanterwebformvalidator-input-error.actived {
     display: block;
     position: absolute;
@@ -414,11 +425,13 @@ body {
     color: #c8c364;
     display: block;
     max-height: 64px;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 .cmd-bar-start {
     float: left;
     margin-left: 5px;
-    padding: 0 0 0 48px;
+    padding: 0 0 0 28px;
 }
 .cmd-bar-user-expand-container {
     display: inline-block;
@@ -749,6 +762,15 @@ body {
     font-weight: bold;
     color: red;
 }
+.image-warnings-container{
+    max-width: 256px;
+    min-height: 227px;
+    margin-left: auto;
+    margin-right: auto
+}
+.image-warnings-container> img{
+    width: 100%;
+}
 .simple-alerts {
     text-transform: uppercase;
     font-size: 0.8rem;
@@ -761,12 +783,9 @@ body {
     line-height: 1rem;
 }
 .content-warnings {
-    width: 350px;
-    margin-left: auto;
-    margin-right: auto;
+
     padding: 26px;
     background-color: #4b4b4b;
-    border-radius: 20px;
     color: wheat;
     font-weight: bold;
     text-transform: uppercase;

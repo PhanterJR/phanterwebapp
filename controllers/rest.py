@@ -159,13 +159,17 @@ class RestLogin(Resource):
                             activated = False
                         token = usuario.token
                         user_name = "%s %s" % (usuario.first_name, usuario.last_name)
-                        if not usuario.roles:
-                            user_role = "Usuário"
-                        else:
+                        user_role = "Usuário"
+                        if usuario.roles:
                             if "administrator" in usuario.roles:
                                 user_role = "Administrador"
-                            else:
-                                user_role = "Usuário"  
+                            if "root" in usuario.roles:
+                                user_role = "Super Administrador"
+                        user_roles = ["user"]
+                        if usuario.roles:
+                            user_roles = usuario.roles
+                            if not "user" in user_roles:
+                                user_roles.append("user")
                         user_image = UserImage(usuario.id).image
                         if user_image:
                             reader = Serialize(app.config['SECRET_KEY_USERS'], int(timedelta(365).total_seconds()))
@@ -191,7 +195,17 @@ class RestLogin(Resource):
                                 'remember_me': is_to_remember,
                                 'user_role': user_role,
                                 'email': Markup.escape(email),
-                            }
+                            },
+                            'info':{
+                                'name':Markup.escape(user_name),
+                                'first_name':Markup.escape(usuario.first_name),
+                                'last_name':Markup.escape(usuario.last_name),
+                                'url_image_user': url_image_user,
+                                'user_name': Markup.escape(user_name),
+                                'remember_me': is_to_remember,
+                                'roles': user_roles,
+                                'email': Markup.escape(email),
+                            },
                         }
                     else:
                         csrf = CSRF()
@@ -888,9 +902,11 @@ class RestUserInfo(Resource):
                 user_image = UserImage(usuario.id).image
                 email = Markup.escape(usuario.email)
                 is_to_remember = True if usuario.remember_me else False
-                user_roles = ["Usuário"]
+                user_roles = ["user"]
                 if usuario.roles:
                     user_roles = usuario.roles
+                    if not "user" in user_roles:
+                        user_roles.append("user")
                 if user_image:
                     reader = Serialize(app.config['SECRET_KEY_USERS'], int(timedelta(365).total_seconds()))
                     autorization = reader.dumps({'token':token})
