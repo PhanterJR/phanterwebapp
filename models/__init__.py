@@ -93,7 +93,7 @@ class User(object):
             self._value_field = email
         elif token:
             self._field = "rest_token"
-            self._value_field = rest_token            
+            self._value_field = token            
         self._user = db(db['auth_user'][self._field]==self._value_field).select().first()
 
     def commit(self):
@@ -392,10 +392,11 @@ class User(object):
     @property
     def token(self):
         if self.remember_me:
-            self.rest_date = datetime.now() + timedelta(days=365)
             time = int(timedelta(365).total_seconds())
+            self.rest_date = datetime.now() + timedelta(days=365)
         else:
             time = app.config['DEFAULT_TIME_TOKEN_EXPIRES']
+            self.rest_date = datetime.now() + timedelta(seconds=time)
         t = Serialize(app.config['SECRET_KEY_USERS'], time)
         token = t.dumps({'id_user':self.id, 'email':self.email})
         self.rest_token = token

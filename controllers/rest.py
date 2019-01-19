@@ -916,13 +916,14 @@ class RestUserInfo(Resource):
                         _external=True)
                 else:
                     url_image_user = url_for('static', filename="images/user.png")
-
+                first_name = Markup.escape(usuario.first_name)
+                last_name = Markup.escape(usuario.last_name)
                 return {'status':'OK',
                         'authenticated':True,
                         'info':{
                             'name':user_name,
-                            'first_name':usuario.first_name,
-                            'last_name':usuario.last_name,
+                            'first_name':first_name,
+                            'last_name':last_name,
                             'url_image_user': url_image_user,
                             'user_name': user_name,
                             'remember_me': is_to_remember,
@@ -930,11 +931,67 @@ class RestUserInfo(Resource):
                             'email': email,
                         },
                         'activated':activated}
-        return {'status':'OK',
-                'authenticated':False,
-                'info':None,
-                'roles':['Anônimo']}
-
+        else:
+            usuario = User(token=token)
+            if usuario:
+                ultima_data = usuario.rest_date
+                periodo = datetime.now() - ultima_data
+                app.logger.debug(periodo.seconds)
+                if periodo.seconds > 0 and periodo.seconds < app.config['DEFAULT_TIME_TOKEN_EXPIRES']:
+                    new_token = usuario.token
+                    usuario = User(token=new_token)
+                    user_name = Markup.escape("%s %s" %(usuario.first_name, usuario.last_name))
+                    if usuario.activated:
+                        activated = True
+                    else:
+                        activated = False
+                    user_image = UserImage(usuario.id).image
+                    email = Markup.escape(usuario.email)
+                    is_to_remember = True if usuario.remember_me else False
+                    user_roles = ["user"]
+                    if usuario.roles:
+                        user_roles = usuario.roles
+                        if not "user" in user_roles:
+                            user_roles.append("user")
+                    if user_image:
+                        reader = Serialize(app.config['SECRET_KEY_USERS'], int(timedelta(365).total_seconds()))
+                        autorization = reader.dumps({'token':new_token.decode('utf-8')})
+                        url_image_user = api.url_for(RestImageUser,
+                            id_image=user_image.id,
+                            autorization=autorization,
+                            _external=True)
+                    else:
+                        url_image_user = url_for('static', filename="images/user.png")
+                    first_name = Markup.escape(usuario.first_name)
+                    last_name = Markup.escape(usuario.last_name)
+                    return {'status':'OK',
+                            'authenticated':True,
+                            'token':new_token.decode('utf-8'),
+                            'info':{
+                                'name':user_name,
+                                'first_name':first_name,
+                                'last_name':last_name,
+                                'url_image_user': url_image_user,
+                                'user_name': user_name,
+                                'remember_me': is_to_remember,
+                                'roles': user_roles,
+                                'email': email,
+                            },
+                            'activated':activated}
+                else:
+                    return {'status':'OK',
+                        'authenticated':False,
+                        'info':None,
+                        'roles':['Anônimo'],
+                        'message':'Tempo expirado'
+                        }    
+            else:
+                return {'status':'OK',
+                    'authenticated':False,
+                    'info':None,
+                    'roles':['Anônimo'],
+                    'message':'Token Inválido'
+                    }
 
 
 class RestServerInfo(Resource):
@@ -970,3 +1027,4 @@ api.add_resource(RestCaptcha, '/api/captcha')
 api.add_resource(RestPhanterGallery, '/api/phantergallery/<section>')
 api.add_resource(RestUserInfo, '/api/user/info')
 api.add_resource(RestServerInfo, '/api/server')
+

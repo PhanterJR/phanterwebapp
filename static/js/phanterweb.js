@@ -2601,7 +2601,7 @@ var PhanterPages = function(){
 
         _print(pagina, "getDataPage: @pagina")
         _print(parameters, "getDataPage: @parameters")
-        $(".phanterwebbuttonpack").removeClass("enabled");
+        //$(".phanterwebbuttonpack").removeClass("enabled");
         $(".progressbar-form-modal").addClass("enabled");
         $(".main-progress-bar").addClass("enabled");
         var token = localStorage.getItem("token");
@@ -2691,18 +2691,35 @@ var PhanterPages = function(){
                         }
                     }
                     var deletar_botao = arrayA_minus_arrayB(botoes_atuais, buttons_to_put)
-                    _print(deletar_botao, "deletar os botoes")
                     for (var i = 0; i < deletar_botao.length; i++) {
                         MainThis.removeButtonPack(deletar_botao[i])
                     }
-                    
-                    _print(buttons_to_put, "Adicionar botoes")
+                    _print(botoes_atuais, "Botões que estão")
+                    _print(buttons_to_put, "Botões solicitados")
+                    _print(deletar_botao, "Deletar os botões")
+                    _print(arrayA_minus_arrayB(buttons_to_put, arrayA_minus_arrayB(botoes_atuais, deletar_botao)), "Botões que serão adicionados")
+                    _print(arrayA_minus_arrayB(botoes_atuais, deletar_botao), "Botões que não serão mexidos")
+                    var botoes_fixos = arrayA_minus_arrayB(botoes_atuais, deletar_botao)
+                    if("active_buttons" in page_obj){
+                        for (var i = 0; i < botoes_fixos.length; i++) {
+                            if(page_obj.active_buttons.indexOf(botoes_fixos[i])>-1){
+                                $("#"+botoes_fixos[i]).addClass("enabled")
+                            } else {
+                                $("#"+botoes_fixos[i]).removeClass("enabled")
+                            }
+                        }
+                        
+                    } else {
+                        $(".phanterwebbuttonpack").each(function(){
+                            $(this).removeClass("enabled")
+                        });
+                    }
                     for (var i = 0; i < buttons_to_put.length; i++) {
                         var button = buttons_to_put[i]
                         if(botoes_atuais.indexOf(button)<0){
                             if(button =="button_admin"){
-                                if("botao_actived" in page_obj){
-                                    if(page_obj.botao_actived.indexOf(button)>-1){
+                                if("active_buttons" in page_obj){
+                                    if(page_obj.active_buttons.indexOf(button)>-1){
                                         MainThis.prependButtonPack(button, true)
                                     } else {
                                         MainThis.prependButtonPack(button)
@@ -2711,8 +2728,8 @@ var PhanterPages = function(){
                                     MainThis.prependButtonPack(button)
                                 }
                             } else {
-                                if("botao_actived" in page_obj){
-                                    if(page_obj.botao_actived.indexOf(button)>-1){
+                                if("active_buttons" in page_obj){
+                                    if(page_obj.active_buttons.indexOf(button)>-1){
                                         MainThis.appendButtonPack(button, true)
                                     } else {
                                         MainThis.appendButtonPack(button)
@@ -2769,6 +2786,9 @@ var PhanterPages = function(){
                             url:"/api/user/info",
                             success:function(data){
                                 if(data.status=="OK"){
+                                    if("token" in data){
+                                        localStorage.setItem("token", data.token)
+                                    }
                                     if (data.authenticated){
                                         if(!data.activated){
                                             var form_activate = JSON.parse(phanterwebCacheDataJS.components.component_alert_top_activation)
@@ -2815,7 +2835,12 @@ var PhanterPages = function(){
                                                     }
                                                 });
                                         };
-                                    };
+                                    } else {
+                                            M.toast({html: "Token expirado!"})
+                                            localStorage.removeItem("loggedUser")
+                                            localStorage.removeItem("token")
+                                            MainThis.principal()
+                                        };
                                     getPage(page_obj, data)
                                 }
                             },
@@ -2925,7 +2950,7 @@ var PhanterPages = function(){
         });
     };
     MainThis.appendButtonPack = function(buttonpack, actived){
-        var actived = (typeof actived === true) ? actived : false;
+        var actived = (actived === true) ? actived : false;
         _print(buttonpack, "adicionando o botão com append:")
         if(isNotEmpty(buttonpack)){
             MainThis.removeButtonPack(buttonpack)
@@ -2947,7 +2972,7 @@ var PhanterPages = function(){
         ComponenteMenu.init();
     };
     MainThis.prependButtonPack = function(buttonpack, actived){
-        var actived = (typeof actived === true) ? actived : false;
+        var actived = (actived === true) ? actived : false;
         _print(buttonpack, "adicionando o botão com prepend:")
         if(isNotEmpty(buttonpack)){
             MainThis.removeButtonPack(buttonpack)
