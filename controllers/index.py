@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from .. import app, __version__ as app_version
+from .. import app
 from flask import render_template, request, send_from_directory
-import os
 
 @app.route('/')
 @app.route('/<pagina>')

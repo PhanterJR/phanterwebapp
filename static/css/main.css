@@ -6,8 +6,11 @@ body {
     flex-direction: column;
     padding-top: 58px;
   }
+body.lock{
+    background-color:#424141
+}
 .background-empresa {
-    background-image: url('/static-versioned/0.0.1/images/store.jpg');
+    background-image: url('/static-versioned/0.1.0/images/store.jpg');
     width: 100%;
     min-height: 500px;
     background-repeat: no-repeat;
@@ -25,6 +28,54 @@ body {
     font-family: Cousine;
     letter-spacing: -1px;
   }
+.new-container{
+    width: 100%;
+}
+.phanterweb-card-container{
+    padding: 20px;
+}
+.phanterweb-container{
+    width: 100%;
+    padding: 0px 20px;
+}
+.phanterpages-card_buttons-container{
+    padding: 50px;
+}
+.card_button {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+    background-color: #e6e6e6;
+    border: 1px solid #bfbfbf;
+    background-image: linear-gradient(to bottom right, white, #e1e1e1);
+    width: 100%;
+}
+.card_button:hover {
+    background-color: orange;
+    color:white;
+    background-image: linear-gradient(to bottom right, yellow, orange);
+
+}
+.titulo_maincontainer{
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 2rem;
+    margin: 0px 0px 24px 0px;
+    width: 100%;
+    margin: 0;
+        margin-bottom: 0px;
+    background-color: white;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14),0 3px 1px -2px rgba(0,0,0,0.12),0 1px 5px 0 rgba(0,0,0,0.2);
+    margin-bottom: 24px;
+    padding: 12px;
+    height: 55px;
+}
+.phanterweb-card-title{
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
 #menu-button-main-page:hover {
     color: orange;
 }
@@ -86,10 +137,14 @@ body {
     background-color: #424141;
     position: fixed;
     left: 0;
-    transition: width 1s ease, left 1s ease;
     max-width: 200px;
     z-index: 20;
     top:64px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: box-shadow 1s, -webkit-box-shadow 1s, width 1s ease, left 1s ease;
+    line-height: 1.2rem;
+    overflow-y: auto;
 }
 .cmp-bar-user-name-role .cmp-bar-user-role {
 
@@ -104,6 +159,8 @@ body {
 }
 #left-bar.expanded {
     width: 90%;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14),0 3px 1px -2px rgba(0,0,0,0.12),0 1px 5px 0 rgba(0,0,0,0.2);
+    transition: box-shadow 1s, -webkit-box-shadow 1s, width 1s ease;
     }
 .phanterwebbuttonpack.enabled {
     background-color: #E0E0E0;
@@ -272,18 +329,19 @@ body {
     float: left;
     padding: 0 10px 0 10px;
 }
-.phanterwebformvalidator-input-error.actived {
+.phanterwebformvalidator-input-error.enabled {
     display: block;
     position: absolute;
     left: 0;
     color: red;
-    bottom: 0;
-    font-size: 0.8rem;
+    bottom: 3px;
+    font-size: 0.75rem;
     width: 98%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     padding: 0 2% 0 2%;
+    text-align: center;
 }
 .container-card-buttons.row {
     text-align: center;
@@ -291,7 +349,7 @@ body {
 #main-container > h2 {
     text-align: center;
 }
-.phanterwebformvalidator-input-error.actived {
+.phanterwebformvalidator-input-error.enabled {
     display: block;
     position: absolute;
     left: 0;
@@ -642,8 +700,13 @@ body {
     z-index: auto;
 
 }
+
 .form-profile-container {
     text-align: center;
+}
+.profile-container{
+    padding-top: 50px;
+
 }
 .basic-profile-user-img-container, .form-image-user-img {
     height: 150px;
@@ -675,6 +738,7 @@ body {
     max-height: 85%;
     z-index: 1005 !important;
 }
+
 /*fim form-users*/
 /*validator*/
     .phanterwebformvalidator-input-check.actived-select {
@@ -1247,6 +1311,13 @@ body {
     #left-bar.expanded {
         left: 0px;
     }
+    .phanterweb-container{
+        width: 100%;
+        padding: 0px 5px;
+    }
+    .phanterweb-card-container{
+        padding: 5px;
+    }
     .modal{
         width: 90%;
     }
@@ -1266,6 +1337,14 @@ body {
     }
     .phanterweb-materialize-button-form-container .btn{
         width: 100%;
+    }
+    .phanterpages-card_buttons-container{
+        padding: 5px;
+    }
+    .titulo_maincontainer {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
     }
     .captcha-option-container {
         display: inline-block;

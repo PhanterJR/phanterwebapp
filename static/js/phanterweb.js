@@ -786,7 +786,7 @@ function validate_data(form){
         var hasattr_iscep = main_element.attr("phanterwebformvalidator_iscep")
         var hasattr_isequals = main_element.attr("phanterwebformvalidator_isequals")
         var hasattr_isnotequals = main_element.attr("phanterwebformvalidator_isnotequals")
-        var hasattr_valisdifferentof = main_element.attr("phanterwebformvalidator_valisdifferentof")
+        var hasattr_valueisdifferentof = main_element.attr("phanterwebformvalidator_valueisdifferentof")
         if (typeof hasattr_isnotempty !== typeof undefined && hasattr_isnotempty !== false){
             can_empty = false;
             var value = element.val();
@@ -894,9 +894,9 @@ function validate_data(form){
                 hasErrorToButton=true;
             }
         }
-        if (typeof hasattr_valisdifferentof !== typeof undefined && hasattr_valisdifferentof !== false){
+        if (typeof hasattr_valueisdifferentof !== typeof undefined && hasattr_valueisdifferentof !== false){
             var value = element.val();
-            var val_notequals = main_element.attr("phanterwebformvalidator_valisdifferentof")
+            var val_notequals = main_element.attr("phanterwebformvalidator_valueisdifferentof")
             
             if (value==val_notequals){                             
                 hasError=true;
@@ -1741,14 +1741,23 @@ var PhanterPages = function(){
     MainThis.dataPage = {};
     MainThis.call_on_principal = function(){};
     MainThis.setCurrentPage = function(pagina, parameters){
+        var pagina_padrao = JSON.stringify({"page": "page_main", parameters:null});
         var currentpage = JSON.parse(localStorage.getItem("currentPage"));
+        var pagina_anterior = pagina_padrao;
+        var pagina_atual = pagina_padrao;
         if (isNotEmpty(currentpage)){
-            localStorage.setItem("lastPage",  JSON.stringify(currentpage));
+            pagina_anterior = JSON.stringify(currentpage)
         };
         if (isNotEmpty(parameters)){
-            localStorage.setItem("currentPage", JSON.stringify({"page":pagina, "parameters":parameters}))
+            pagina_atual = JSON.stringify({"page":pagina, "parameters":parameters})
+
         } else{
-            localStorage.setItem("currentPage", JSON.stringify({"page":pagina, "parameters":null}))
+            pagina_atual =  JSON.stringify({"page":pagina, "parameters":null})
+        };
+        localStorage.setItem("currentPage", pagina_atual);
+
+        if (pagina_anterior!=pagina_atual){
+            localStorage.setItem("lastPage", pagina_anterior);
         };
     }
     if(isNotEmpty(localStorage.getItem('token'))){
@@ -1790,13 +1799,16 @@ var PhanterPages = function(){
         for(x in data.validators){
             var error_men = data.validators[x]
             if (error_men!="OK"){
-                $("#phanterwebformvalidator-input-error-"+x).html(data.validators[x]).slideDown()
+                $("#phanterwebformvalidator-input-error-"+x)
+                    .html(data.validators[x])
+                    .addClass("enabled")
+                    .slideDown()
             }
         }
     };
     MainThis.login = function () {
         $(".progressbar-form-modal").addClass("enabled");
-        $(".phantervalidator-input-error").each(function(){
+        $(".phanterwebformvalidator-input-error").each(function(){
             $(this).slideUp();
         });
         var login_pass_b64 = btoa($("#form-login-input-email").val()+":"+$("#form-login-input-password").val())
@@ -1810,7 +1822,7 @@ var PhanterPages = function(){
             'csrf_token':$("#form-login-input-csrf_token").val()
         }
         
-        $.ajax({url:remoteHostAddress+"/api/user/login",
+        $.ajax({url:remoteHostAddress+"/api/authenticater",
                 type: "POST",
                 crossOrigin: true,
                 data:data_form,
@@ -1823,13 +1835,14 @@ var PhanterPages = function(){
                         localStorage.setItem("token", data.token)
                         M.toast({html: "Login efetuado com sucesso"});
                         localStorage.setItem("lastUser", JSON.stringify({
-                            "url_image_user":data.data_user.url_image_user,
-                            "user_name":data.data_user.user_name,
-                            "remember_me":data.data_user.remember_me,
-                            "user_role":data.data_user.user_role,
-                            "email":data.data_user.email
+                            "url_image_user":data.data.url_image_user,
+                            "user_name":data.data.user_name,
+                            "remember_me":data.data.remember_me,
+                            "user_role":data.data.role,
+                            "roles":data.data.roles,
+                            "email":data.data.email
                         }));
-                        localStorage.setItem("loggedUser", JSON.stringify(data.info));
+                        localStorage.setItem("loggedUser", JSON.stringify(data.data));
                         if(data.temporary_password){
                             phanterpages.getDataPage("page_change_password", {'aviso':'A senha temporária irá expirar, utilize-a como senha atual para adicionar uma nova senha.'})
                         }else{
@@ -1983,11 +1996,11 @@ var PhanterPages = function(){
                     $("#register-ajax-button-submit")
                         .off("click.register-ajax-button-submit")
                         .on("click.register-ajax-button-submit", function(){
-                            $(".phantervalidator-input-error").each(function(){
+                            $(".phanterwebformvalidator-input-error").each(function(){
                                 $(this).slideUp();
                             });
                             $(".progressbar-form-modal").addClass("enabled");
-                            $.ajax({url:remoteHostAddress+"/api/user/register",
+                            $.ajax({url:remoteHostAddress+"/api/users",
                                 type: "POST",
                                 crossOrigin: true,
                                 data: $("#form-register").serialize(),
@@ -1997,13 +2010,14 @@ var PhanterPages = function(){
                                         modal_layout.modal("close");
                                         localStorage.setItem("token", data.token)
                                         localStorage.setItem("lastUser", JSON.stringify({
-                                            "url_image_user":data.data_user.url_image_user,
-                                            "user_name":data.data_user.user_name,
-                                            "remember_me":data.data_user.remember_me,
-                                            "user_role":data.data_user.user_role,
-                                            "email":data.data_user.email
+                                            "url_image_user":data.data.url_image_user,
+                                            "user_name":data.data.user_name,
+                                            "remember_me":data.data.remember_me,
+                                            "user_role":data.data.role,
+                                            "roles":data.data.roles,
+                                            "email":data.data.email
                                         }));
-                                        localStorage.setItem("loggedUser", JSON.stringify(data.info));
+                                        localStorage.setItem("loggedUser", JSON.stringify(data.data));
                                         phanterpages.reload();
                                     } else if(data.status=="ERROR"){
                                         M.toast({html: data.message})
@@ -2018,6 +2032,7 @@ var PhanterPages = function(){
                                     },
                                 error: function(data){
                                     M.toast({html: "Erro na conexão"})
+                                    MainThis.getCaptcha("register")
                                     $(".progressbar-form-modal").removeClass("enabled");
                                     $(".main-progress-bar").removeClass("enabled");
                                     _print(data, "openModalRegister: "+remoteHostAddress+"/api/user/register")
@@ -2085,6 +2100,7 @@ var PhanterPages = function(){
                                 'csrf_token': $("#input-csrf_token").val()},
                                 success: function(data, textStatus){
                                     if(data.status=="OK"){
+                                        $("#modal_layout").modal("close");
                                         M.toast({html: "Solicitação de nova senha enviada"});
                                         phanterpages.principal()
                                     } else if(data.status=="ERROR"){
@@ -2092,6 +2108,7 @@ var PhanterPages = function(){
                                          MainThis.getCaptcha("request-password") 
                                     }
                                     $(".progressbar-form-modal").removeClass("enabled");
+
                                 },
                                 error: function(data){
                                     M.toast({html: "Erro na conexão"})
@@ -2145,16 +2162,16 @@ var PhanterPages = function(){
     MainThis.profile = function(){
         
         MainThis.getRemoteJson({
-            url:"/api/user/info",
+            url:"/api/users",
             success:function(data){
                 if(data.status=="OK"){
                     if (data.authenticated){
-                        $("#input-first_name").val(data.info.first_name)
-                        $("#input-last_name").val(data.info.last_name)
-                        $("#input-email").val(data.info.email)
-                        MainThis.getPhantergaleryProfileUser(data.info.url_image_user);
+                        $("#input-first_name").val(data.data.first_name)
+                        $("#input-last_name").val(data.data.last_name)
+                        $("#input-email").val(data.data.email)
+                        MainThis.getPhantergaleryProfileUser(data.data.url_image_user);
 
-                        phanterpages.getCsrfToInput(
+                        MainThis.getCsrfToInput(
                             "profile",
                             "#form-profile-input-csrf_token", 
                             function(){
@@ -2177,13 +2194,18 @@ var PhanterPages = function(){
                                     processData: false,
                                     success: function(data, textStatus){
                                         if(data.status=="OK"){
-                                            if(data.change_email==true){
-                                                M.toast({html: "Seu email foi alterado!"})
-                                                phanterpages.principal()
-                                            } else{
-                                                M.toast({html: "Perfil atualizado com sucesso!"})
-                                                phanterpages.reload()
-                                            }
+                                            localStorage.setItem("lastUser", JSON.stringify({
+                                                "url_image_user":data.data.url_image_user,
+                                                "user_name":data.data.user_name,
+                                                "remember_me":data.data.remember_me,
+                                                "user_role":data.data.role,
+                                                "roles":data.data.roles,
+                                                "email":data.data.email
+                                            }));
+                                            localStorage.setItem("loggedUser", JSON.stringify(data.data));
+                                            M.toast({html: "Perfil atualizado com sucesso!"})
+                                            phanterpages.reload()
+
                                         } else if (data.status=="ATTENTION"){
                                             M.toast({html: data.message})
                                              if('csrf' in data){
@@ -2223,13 +2245,13 @@ var PhanterPages = function(){
                 M.toast({html: "Erro na conexão"})
                 $(".progressbar-form-modal").removeClass("enabled");
                 $(".main-progress-bar").removeClass("enabled");
-                _print(data, "getRemoteJson: "+remoteHostAddress+"/api/user/info")
+                _print(data, "getRemoteJson: "+remoteHostAddress+"/api/users")
             }
         });  
     };
     MainThis.lock = function(){
         MainThis.getRemoteJson({
-            url:"/api/user/info",
+            url:"/api/users",
             success:function(data){
                 if(data.status=="OK"){
                     var component_user_nologin = phanterwebCacheDataJS.components.component_user_nologin
@@ -2238,18 +2260,18 @@ var PhanterPages = function(){
                     $("#options-top-main-bar-left").html(JSON.parse(component_user_nologin_menu));
                     if (data.authenticated){
                         localStorage.setItem("lockLastPage", localStorage.getItem("lastPage"))
-                        localStorage.setItem("lockUser", JSON.stringify(data.info))
-                        $("#form-lock-image-user-url").attr('src', data.info.url_image_user)
-                        $("#form-lock-profile-user-name").html(data.info.name)
-                        $("#form-lock-input-email").val(data.info.email)
-                        if(data.info.roles.indexOf("root")>-1){
+                        localStorage.setItem("lockUser", JSON.stringify(data.data))
+                        $("#form-lock-image-user-url").attr('src', data.data.url_image_user)
+                        $("#form-lock-profile-user-name").html(data.data.user_name)
+                        $("#form-lock-input-email").val(data.data.email)
+                        if(data.data.roles.indexOf("root")>-1){
                             $("#form-lock-profile-user-role").text("Super Administrador")
-                        } else if(data.info.roles.indexOf("administrator")>-1){
+                        } else if(data.data.roles.indexOf("administrator")>-1){
                             $("#form-lock-profile-user-role").text("Administrador")
                         } else {
                             $("#form-lock-profile-user-role").text("Usuário")
                         }
-                        if(data.info.remember_me==true){
+                        if(data.data.remember_me==true){
                             $("#form-lock-input-remember_me").attr("checked", "checked");
                         }
                         localStorage.removeItem('token');
@@ -2273,7 +2295,7 @@ var PhanterPages = function(){
                     }
                     ComponenteMenu.init();
                     $("#alert-top").slideUp();
-                    MainThis.getCsrfToInput("lock", "#form-lock-input-csrf", function(){$("#form-lock-user").phanterwebFormValidator()})
+                    MainThis.getCsrfToInput("login", "#form-lock-input-csrf", function(){$("#form-lock-user").phanterwebFormValidator()})
                     $("#form-lock-button-outher-user").on("click", function(){
                         MainThis.openModalLogin();
                         $("#modal_layout").modal("open")
@@ -2282,13 +2304,12 @@ var PhanterPages = function(){
                     M.toast({html: "Bloqueado"})
                     $(".cmp-bar-user_and_menu-container").fadeOut();
                     $("#materialize-component-left-menu-user").slideUp();
-                    $("#fontawesome-component-left-menu-user").slideUp();
-                    $("body").css({"background-color":"#424141"}); 
+                    $("#fontawesome-component-left-menu-user").slideUp();; 
                     $("#form-lock-button-unlock")
                         .off('click.form-lock-button-unlock')
                         .on('click.form-lock-button-unlock', function(){
                             $(".main-progress-bar").addClass("enabled");
-                            $(".phantervalidator-input-error").each(function(){
+                            $(".phanterwebformvalidator-input-error").each(function(){
                                 $(this).slideUp();
                             });
                             var login_pass_b64 = btoa($("#form-lock-input-email").val()+":"+$("#form-lock-input-password").val())
@@ -2301,13 +2322,12 @@ var PhanterPages = function(){
                                 'remember_me':remember_me,
                                 'csrf_token':$("#form-lock-input-csrf").val()
                             }
-                            $.ajax({url:remoteHostAddress+"/api/user/login",
+                            $.ajax({url:remoteHostAddress+"/api/authenticater",
                                     type: "POST",
                                     crossOrigin: true,
                                     data:data_form,
                                     success: function(data, textStatus){
                                         if(data.status=="OK"){
-                                            $("body").css({"background-color":"#E0E0E0"}); 
                                             $(".main-progress-bar").removeClass("enabled");
                                             localStorage.setItem("currentPage",localStorage.getItem("lockLastPage"))
                                             localStorage.removeItem('lockUser');
@@ -2315,13 +2335,14 @@ var PhanterPages = function(){
                                             localStorage.setItem("token", data.token)
                                             M.toast({html: "Desbloqueado!"});
                                             localStorage.setItem("lastUser", JSON.stringify({
-                                                "url_image_user":data.data_user.url_image_user,
-                                                "user_name":data.data_user.user_name,
-                                                "remember_me":data.data_user.remember_me,
-                                                "user_role":data.data_user.user_role,
-                                                "email":data.data_user.email
+                                                "url_image_user":data.data.url_image_user,
+                                                "user_name":data.data.user_name,
+                                                "remember_me":data.data.remember_me,
+                                                "user_role":data.data.role,
+                                                "roles":data.data.roles,
+                                                "email":data.data.email
                                             }));
-                                            localStorage.setItem("loggedUser", JSON.stringify(data.info));
+                                            localStorage.setItem("loggedUser", JSON.stringify(data.data));
                                             phanterpages.reload();
 
 
@@ -2353,7 +2374,7 @@ var PhanterPages = function(){
                 M.toast({html: "Erro na conexão"})
                 $(".progressbar-form-modal").removeClass("enabled");
                 $(".main-progress-bar").removeClass("enabled");
-                _print(data, "getRemoteJson: "+remoteHostAddress+"/api/user/info")
+                _print(data, "getRemoteJson: "+remoteHostAddress+"/api/users")
             }
         });  
     };
@@ -2520,17 +2541,17 @@ var PhanterPages = function(){
             var component_user_login_menu = phanterwebCacheDataJS.components.component_user_login_menu
             $("#echo-user-cmp-login").html(JSON.parse(component_user_login));
             $("#options-top-main-bar-left").html(JSON.parse(component_user_login_menu));
-            $("#url_image_user").attr('src', data.info.url_image_user)
-            $("#materialize-component-left-menu-url-imagem-user").attr('src', data.info.url_image_user)
-            $("#form-login-image-user-url").attr('src', data.info.url_image_user)
-            $("#form-lock-image-user-url").attr('src', data.info.url_image_user)
-            $("#user_first_and_last_name_login").html(data.info.name)
-            $("#materialize-component-left-menu-name-user").text(data.info.name)
+            $("#url_image_user").attr('src', data.data.url_image_user)
+            $("#materialize-component-left-menu-url-imagem-user").attr('src', data.data.url_image_user)
+            $("#form-login-image-user-url").attr('src', data.data.url_image_user)
+            $("#form-lock-image-user-url").attr('src', data.data.url_image_user)
+            $("#user_first_and_last_name_login").html(data.data.user_name)
+            $("#materialize-component-left-menu-name-user").text(data.data.user_name)
             var calc_role = "Usuário"
-            if(data.info.roles.indexOf("administrator")>-1){
+            if(data.data.roles.indexOf("administrator")>-1){
                 calc_role = "Administrador"
             };
-            if(data.info.roles.indexOf("root")>-1){
+            if(data.data.roles.indexOf("root")>-1){
                 calc_role = "Super Administrador"
             };
             $("#user_role_login").text(calc_role)
@@ -2598,17 +2619,29 @@ var PhanterPages = function(){
         ComponenteMenu.init();        
     }
     MainThis.getDataPage = function(pagina, parameters){
-
+        if(pagina=="page_lock"){
+            $("body").addClass("lock");
+        } else {
+            $("body").removeClass("lock");
+        }
         _print(pagina, "getDataPage: @pagina")
         _print(parameters, "getDataPage: @parameters")
-        //$(".phanterwebbuttonpack").removeClass("enabled");
+        var temp_parameters = MainThis.getPamameters(pagina);
+        var currentpage = JSON.parse(localStorage.getItem("currentPage"));
+
+        if (isNotEmpty(parameters)){
+            MainThis.setCurrentPage(pagina, parameters)
+        } else{
+            MainThis.setCurrentPage(pagina, null);
+        }
+
         $(".progressbar-form-modal").addClass("enabled");
         $(".main-progress-bar").addClass("enabled");
         var token = localStorage.getItem("token");
         var user_info = localStorage.getItem("loggedUser");
         if(isNotEmpty(token) && isNotEmpty(user_info)){
             _print(user_info, "Dados do usuário")
-            MainThis.addCmdLogged({'info':JSON.parse(user_info)})
+            MainThis.addCmdLogged({'data':JSON.parse(user_info)})
         } else {
             _print("Sem usuário")
             MainThis.addCmdUnlogged()
@@ -2618,9 +2651,13 @@ var PhanterPages = function(){
             _print(page_obj, "getPage @page_obj:")
             _print(data, "getPage @data:")
             var roles = []
-            if(data.info!==null){
-                roles = (typeof data.info.roles !== undefined) ? data.info.roles : [];
-            } 
+            if(isNotEmpty(data)){
+                if("data" in data){
+                    if(data.data!==null){
+                        roles = (typeof data.data.roles !== undefined) ? data.data.roles : [];
+                    } 
+                }
+            }
             var html = "";
             var page_obj = page_obj
             if("page" in page_obj){
@@ -2752,7 +2789,7 @@ var PhanterPages = function(){
                 if(isNotEmpty(parameters)){
                     page_obj.parameters=parameters
                 }
-                var temp_parameters = MainThis.getPamameters(pagina);
+/*                var temp_parameters = MainThis.getPamameters(pagina);
                 var currentpage = JSON.parse(localStorage.getItem("currentPage"));
                 if(isNotEmpty(currentpage)){
                     if(pagina==currentpage.page){
@@ -2770,7 +2807,7 @@ var PhanterPages = function(){
                     } else{
                         MainThis.setCurrentPage(pagina, null);
                     }
-                }
+                }*/
                 if(("can_access" in page_obj)||("buttons" in page_obj)){
                     var need_info = false;
                     if("buttons" in page_obj){
@@ -2783,12 +2820,37 @@ var PhanterPages = function(){
                     }
                     if(need_info){
                         MainThis.getRemoteJson({
-                            url:"/api/user/info",
+                            url:"/api/users",
                             success:function(data){
                                 if(data.status=="OK"){
                                     if("token" in data){
+                                        console.error("apareceu o token")
                                         localStorage.setItem("token", data.token)
+                                        $("#url_image_user").attr('src', data.data.url_image_user)
+                                        $("#materialize-component-left-menu-url-imagem-user").attr('src', data.data.url_image_user)
+                                        $("#form-login-image-user-url").attr('src', data.data.url_image_user)
+                                        $("#form-lock-image-user-url").attr('src', data.data.url_image_user)
+                                        $("#user_first_and_last_name_login").html(data.data.user_name)
+                                        $("#materialize-component-left-menu-name-user").text(data.data.user_name)
+                                        var calc_role = "Usuário"
+                                        if(data.data.roles.indexOf("administrator")>-1){
+                                            calc_role = "Administrador"
+                                        };
+                                        if(data.data.roles.indexOf("root")>-1){
+                                            calc_role = "Super Administrador"
+                                        };
+                                        $("#user_role_login").text(calc_role)
+                                        localStorage.setItem("lastUser", JSON.stringify({
+                                            "url_image_user":data.data.url_image_user,
+                                            "user_name":data.data.user_name,
+                                            "remember_me":data.data.remember_me,
+                                            "user_role":data.data.role,
+                                            "roles":data.data.roles,
+                                            "email":data.data.email
+                                        }));
+                                        localStorage.setItem("loggedUser", JSON.stringify(data.data));
                                     }
+                                    console.error("nada de nada")
                                     if (data.authenticated){
                                         if(!data.activated){
                                             var form_activate = JSON.parse(phanterwebCacheDataJS.components.component_alert_top_activation)
@@ -2834,13 +2896,66 @@ var PhanterPages = function(){
                                                         M.toast({html: "Código Inválido"})
                                                     }
                                                 });
+                                            $("#alert-top-new-code")
+                                                .off('click.new_code')
+                                                .on('click.new_code', function(){
+                                                    $(".main-progress-bar").addClass("enabled");
+                               
+                                                    $.ajax({url:remoteHostAddress+"/api/user/active-code",
+                                                        type: "GET",
+                                                        crossOrigin: true,
+                                                        success: function(data, textStatus){
+                                                            if(data.status=="OK"){
+                                                                M.toast({html: "Solicitação Enviada!"});
+                                                            } else if(data.status=="ERROR"){
+                                                                M.toast({html: data.message})
+                                                            }
+                                                            $(".progressbar-form-modal").removeClass("enabled");
+                                                            $(".main-progress-bar").removeClass("enabled");
+                                                        },
+                                                        error: function(data){
+                                                            M.toast({html: "Erro na conexão"})
+                                                            $(".progressbar-form-modal").removeClass("enabled");
+                                                            $(".main-progress-bar").removeClass("enabled");
+                                                            _print(data, "getDataPage: "+remoteHostAddress+"/api/user/active-code")
+                                                        },
+                                                        headers:{
+                                                            'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
+                                                            'Authorization': localStorage.getItem("token")
+                                                            },
+                                                        dataType:"json"
+                                                    });
+
+                                                });
                                         };
                                     } else {
+                                        $("#alert-top").slideUp(function(){
+                                            $(this).removeClass("enabled");
+                                        });
+
+                                        var has_token = localStorage.getItem("token");
+                                        if(isNotEmpty(has_token)){
                                             M.toast({html: "Token expirado!"})
                                             localStorage.removeItem("loggedUser")
                                             localStorage.removeItem("token")
-                                            MainThis.principal()
-                                        };
+                                            MainThis.principal();
+                                        }
+                                    };
+                                    getPage(page_obj, data)
+                                } else if(data.status=="ERROR"){
+                                    if(!data.authenticated){
+                                        $("#alert-top").slideUp(function(){
+                                            $(this).removeClass("enabled");
+                                        });
+
+                                        var has_token = localStorage.getItem("token");
+                                        if(isNotEmpty(has_token)){
+                                            M.toast({html: "Token expirado!"})
+                                            localStorage.removeItem("loggedUser")
+                                            localStorage.removeItem("token")
+                                            MainThis.principal();
+                                        }
+                                    }
                                     getPage(page_obj, data)
                                 }
                             },
@@ -2855,36 +2970,33 @@ var PhanterPages = function(){
                     }
                 }
             } else {
-                    var temp_parameters = MainThis.getPamameters(pagina);
-                    var currentpage = JSON.parse(localStorage.getItem("currentPage"));
-                    if(isNotEmpty(currentpage)){
-                        if(pagina==currentpage.page){
-                            MainThis.setCurrentPage(pagina, temp_parameters);
-                        } else {
-                            if (isNotEmpty(parameters)){
-                                MainThis.setCurrentPage(pagina, parameters)
-                            } else{
-                                MainThis.setCurrentPage(pagina, null);
-                            }
-                        };
-                    } else{
+/*                var temp_parameters = MainThis.getPamameters(pagina);
+                var currentpage = JSON.parse(localStorage.getItem("currentPage"));
+                if(isNotEmpty(currentpage)){
+                    if(pagina==currentpage.page){
+                        MainThis.setCurrentPage(pagina, temp_parameters);
+                    } else {
                         if (isNotEmpty(parameters)){
                             MainThis.setCurrentPage(pagina, parameters)
                         } else{
                             MainThis.setCurrentPage(pagina, null);
                         }
+                    };
+                } else{
+                    if (isNotEmpty(parameters)){
+                        MainThis.setCurrentPage(pagina, parameters)
+                    } else{
+                        MainThis.setCurrentPage(pagina, null);
                     }
-                    html = JSON.parse(phanterwebCacheDataJS.pages[pagina])
-                    $("#main-container").html(html);
-                    ajustar_imagem();
-                    links_href();
-                    ComponenteMenu.init()
+                }*/
+                html = JSON.parse(phanterwebCacheDataJS.pages[pagina])
+                $("#main-container").html(html);
+                ajustar_imagem();
+                links_href();
+                ComponenteMenu.init()
 
-                    $(".progressbar-form-modal").removeClass("enabled");
-                    $(".main-progress-bar").removeClass("enabled");
-
-
-
+                $(".progressbar-form-modal").removeClass("enabled");
+                $(".main-progress-bar").removeClass("enabled");
             }
         } else {
             console.error("getDataPage: @pagina:", pagina)
@@ -3058,7 +3170,7 @@ var PHANTERWEB = function(parameters){
         //materializecss
         var target_page=JSON.parse(localStorage.getItem("currentPage"))
         if(isNotEmpty(target_page)){
-            phanterpages.getDataPage(target_page.page);
+            phanterpages.getDataPage(target_page.page, target_page.parameters);
 
         }else{
             phanterpages.getDataPage("page_main");

@@ -130,6 +130,7 @@ strong{
     z-index: 2001;
 
 }
+
 /*FIM CARDAPIO*/
 
 /*INICIO ADMINISTRAÇÃO*/
@@ -146,6 +147,9 @@ strong{
     }
     .label_menu {
         width: 109px;
+    }
+    .label_icon{
+        width: 20px;
     }
     #tabela_lista_de_estoque .label_menu {
         width: 34px;
@@ -183,10 +187,23 @@ strong{
         top: 71px;
         height: 73px;
     }
+    #adicionar_produto .fixed-action-btn,
+    #adicionar_fornecedor .fixed-action-btn,
+    #adicionar_entrada .fixed-action-btn{
+        position: absolute;
+        top: 5px;
+        height: 73px;
+    }
     .main-container-estoque_adicionar_no_estoque.card, .main-container-produto_adicionar_no_produto.card {
         padding-bottom: 67px;
     }
 /*FIM ESTOQUE*/
+.main-container-cadastro_fornecedores.card,
+.main-container-cadastro_produtos.card,
+.main-container-cadastro_fornecedores.card
+{
+    padding: 20px;
+}
 /*INICIO PRODUTO*/
     .produto-container {
         padding: 20px;
