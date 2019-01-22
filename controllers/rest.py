@@ -43,6 +43,7 @@ def requires_login(
                 app.config['SECRET_KEY_USERS'],
                 app.config['DEFAULT_TIME_TOKEN_EXPIRES']
             )
+            new_csrf_token = None
             try:
                 id_user = t.loads(token)['id_user']
             except Exception as e:
@@ -64,14 +65,14 @@ def requires_login(
                                 'roles': ['Anônimo'],
                                 'message': "Não tem autoriação",
                             }, 401
-
+                    proposito = "publico"
+                    csrf = CSRF()
+                    if intention_csrf:
+                        proposito = intention_csrf
+                    csrf_token = csrf.token(proposito=intention_csrf)
+                    new_csrf_token = csrf_token
                     if check_csrf:
-                        csrf = CSRF()
                         is_valid = csrf.valid_response_token(args['csrf_token'])
-                        proposito = "publico"
-                        if intention_csrf:
-                            proposito = intention_csrf
-                        csrf_token = csrf.token(proposito=intention_csrf)
                         if not is_valid:
                             frameinfo = getframeinfo(currentframe())
                             authorization_error.error(
@@ -88,7 +89,7 @@ def requires_login(
                                 'data': None,
                                 'roles': ['Anônimo'],
                                 'message': "Erro no envio dos dados, tente novamente!",
-                                'csrf_token': csrf_token,
+                                'csrf': csrf_token,
                             }
                         else:
                             proposito = is_valid['proposito']
@@ -112,11 +113,13 @@ def requires_login(
                                     'roles': ['Anônimo'],
                                     'message': "Token csrf inválido!",
                                 }
+                    kargs['token'] = token
+                    kargs['usuario'] = usuario
+                    kargs['new_csrf_token'] = new_csrf_token
                     return f(*args, **kargs)
                 else:
-                    frameinfo = getframeinfo(currentframe())
                     id_user = str(id_user)
-
+                    frameinfo = getframeinfo(currentframe())
                     message_error = "".join([
                         "file: %s" % frameinfo.filename,
                         "\nline: %s" % frameinfo.lineno,
@@ -138,7 +141,6 @@ def requires_login(
                 if permit_retoken:
                     usuario = User(token=token)
                     if usuario:
-                        app.logger.debug("login pelo token")
                         ultima_data = usuario.rest_date
                         periodo = datetime.now() - ultima_data
                         app.logger.debug(periodo.seconds)
@@ -213,7 +215,7 @@ def requires_login(
                             return {
                                 'status': 'ERROR',
                                 'authenticated': False,
-                                'data':None,
+                                'data': None,
                                 'roles': ['Anônimo'],
                                 'message': 'Token inválido ou expirado, faça login novamente!'
                             }
@@ -293,6 +295,8 @@ def requires_csrf(
                         'status': "ERROR",
                         'message': "Token csrf inválido!",
                     }
+
+            kargs['new_csrf_token'] = csrf_token
             return f(*args, **kargs)
         return f_intern
     return real_decorator
@@ -550,18 +554,10 @@ class RestCaptcha(Resource):
 
 class RestActive(Resource):
 
-    @requires_login()
-    def get(self):
-        parser.add_argument('Authorization', location='headers')
-        args = parser.parse_args()
-        token = args['Authorization']
-        t = Serialize(app.config['SECRET_KEY_USERS'], app.config['DEFAULT_TIME_TOKEN_EXPIRES'])
-        try:
-            id_user = t.loads(token)['id_user']
-        except Exception as e:
-            id_user = 0
-        if id_user:
-            usuario = User(id_user=id_user)
+    @requires_login(defid="RestActive.get")
+    def get(self, *args, **kargs):
+        if 'usuario' in kargs:
+            usuario = kargs['usuario']
             if usuario:
                 if usuario.activate_date_expire:
                     data_code = (
@@ -584,15 +580,9 @@ class RestActive(Resource):
                 else:
                     usuario.send_new_ajax_activation_code()
                     return {'status': 'OK', 'message': 'Código Enviado!'}
-    @requires_login()
-    def post(self):
-        token = request.headers.get('Authorization')
-        t = Serialize(app.config['SECRET_KEY_USERS'], app.config['DEFAULT_TIME_TOKEN_EXPIRES'])
-        try:
-            id_user = t.loads(token)['id_user']
-        except Exception as e:
-            id_user = 0
 
+    @requires_login(defid="RestActive.post")
+    def post(self, *args, **kargs):
         parser.add_argument('code')
         args = parser.parse_args()
         code = args['code']
@@ -600,8 +590,8 @@ class RestActive(Resource):
             code = int(code)
         except Exception as e:
             return {'status': 'ERROR', 'message': 'Código Inválido!'}
-        if id_user:
-            usuario = User(id_user=id_user)
+        if 'usuario' in kargs:
+            usuario = kargs['usuario']
             if usuario:
                 if not usuario.activated:
                     usuario.increment_attempts_to_activate()
@@ -638,27 +628,21 @@ class RestActive(Resource):
 
 class RestRequestPassword(Resource):
 
-    def post(self):
-        parser.add_argument('csrf_token')
-        parser.add_argument('email')
+    @requires_csrf(intention_csrf="request-password", defid="RestRequestPassword.post")
+    def post(self, *args, **kargs):
+        parser.add_argument('email-request-password')
         args = parser.parse_args()
-        email = args['email']
-        csrf_token = args['csrf_token']
-        valid_email = Validator(email)
-        valid_csrf_token = Validator(csrf_token)
-        valid_email.isEmail("O email é inválido.")
-        valid_csrf_token.isNotEmpty("CSRF token inválido.")
-        if any([
-            valid_email.has_error,
-            valid_csrf_token.has_error
-        ]):
+        validate = ValidateReqArgs(args)
+        email = args['email-request-password']
+        validate.isEmail('email-request-password', "O email é inválido.")
+        csrf_token = kargs['new_csrf_token']
+
+        if validate.anyError:
             return {
                 'status': 'ERROR',
                 'message': 'Erros nos dados enviados!',
-                'validators': {
-                    'email': valid_email.error if valid_email.has_error else "OK",
-                    'csrf_token': valid_csrf_token.error if valid_csrf_token.has_error else "OK",
-                }
+                'csrf': csrf_token,
+                'validators': validate.validators
             }
         else:
             usuario = User(email=email)
@@ -719,223 +703,6 @@ class RestProfile(Resource):
                 }
             else:
                 return {'status': 'ERROR', 'message': 'Usuário ou/e token Inválido(s)!'}
-
-    def post(self):
-        token = request.headers.get('Authorization')
-        t = Serialize(app.config['SECRET_KEY_USERS'], app.config['DEFAULT_TIME_TOKEN_EXPIRES'])
-        try:
-            id_user = t.loads(token)['id_user']
-        except Exception as e:
-            id_user = 0
-        if id_user:
-            usuario = User(id_user=id_user)
-            if usuario:
-                parser.add_argument('csrf_token')
-                parser.add_argument('email')
-                parser.add_argument('first_name')
-                parser.add_argument('last_name')
-                parser.add_argument('email')
-                parser.add_argument('phantergallery_upload-input-file-profile')
-                parser.add_argument('phantergallery-input-name-cutterSizeX-profile')
-                parser.add_argument('phantergallery-input-name-cutterSizeY-profile')
-                parser.add_argument('phantergallery-input-name-positionX-profile')
-                parser.add_argument('phantergallery-input-name-positionY-profile')
-                parser.add_argument('phantergallery-input-name-newSizeX-profile')
-                parser.add_argument('phantergallery-input-name-newSizeY-profile')
-                args = parser.parse_args()
-
-                csrf_token = args['csrf_token']
-                first_name = args['first_name']
-                last_name = args['last_name']
-                new_email = args['email']
-                valid_first_name = Validator(first_name)
-                valid_last_name = Validator(last_name)
-                valid_email = Validator(new_email)
-                valid_csrf_token = Validator(csrf_token)
-                valid_first_name.isNotEmpty("O nome não pode ser vazio.")
-                valid_last_name.isNotEmpty("O sobrenome não pode ser vazio.")
-                valid_csrf_token.isNotEmpty("O csrf_token não pode ser vazio.")
-                valid_email.isEmail("O email é inválido.")
-                if any([
-                    valid_first_name.has_error,
-                    valid_last_name.has_error,
-                    valid_email.has_error,
-                    valid_csrf_token.has_error
-                ]):
-                    return {
-                        'status': 'ERROR',
-                        'message': 'Erros nos dados enviados!',
-                        'validators': {
-                            'first_name': valid_first_name.error if valid_first_name.has_error else "OK",
-                            'last_name': valid_last_name.error if valid_last_name.has_error else "OK",
-                            'email': valid_email.error if valid_email.has_error else "OK",
-                            'csrf_token': valid_csrf_token.has_error if valid_csrf_token.has_error else "OK",
-                        }
-                    }
-                else:
-                    csrf = CSRF()
-                    response_token = csrf.valid_response_token(csrf_token)
-                    if response_token:
-                        email_now = usuario.email
-                        email_alterado = False
-                        usuario_alterado = False
-                        sobrenome_alterado = False
-                        imagem_alterada = False
-                        if new_email != email_now:
-                            check_email = User(email=new_email)
-                            if check_email:
-                                csrf = CSRF()
-                                csrf_token = csrf.token(
-                                    proposito="mudar profile apos email existir"
-                                )
-                                usuario.activity(
-                                    "".join(
-                                        [
-                                            "RestProfile: O usuário tentou mudar o email de ",
-                                            email_now, " para ", new_email,
-                                            " sem sucesso, o email já está cadastrado"
-                                        ]
-                                    )
-                                )
-                                return {
-                                    'status': 'ERROR',
-                                    'csrf': csrf_token,
-                                    'message': 'O novo email digitado já existe!',
-                                    'validators': {
-                                        'first_name': valid_first_name.error if valid_first_name.has_error else "OK",
-                                        'last_name': valid_last_name.error if valid_last_name.has_error else "OK",
-                                        'email': "O email já existe",
-                                    }
-                                }
-                            else:
-                                usuario.email = new_email
-                                email_alterado = True
-
-                        if(first_name != usuario.first_name):
-                            usuario.first_name = first_name
-                            usuario_alterado = True
-                        if(last_name != usuario.last_name):
-                            usuario.last_name = last_name
-                            sobrenome_alterado = True
-
-                        if 'phantergallery_upload-input-file-profile' in request.files:
-                            imagem_alterada = True
-                            arquivo = request.files['phantergallery_upload-input-file-profile']
-                            cutterSizeX = args['phantergallery-input-name-cutterSizeX-profile']
-                            cutterSizeY = args['phantergallery-input-name-cutterSizeY-profile']
-                            positionX = args['phantergallery-input-name-positionX-profile']
-                            positionY = args['phantergallery-input-name-positionY-profile']
-                            newSizeX = args['phantergallery-input-name-newSizeX-profile']
-                            newSizeY = args['phantergallery-input-name-newSizeY-profile']
-                            if arquivo.filename != '':
-                                imageName = secure_filename(arquivo.filename)
-                                imageBytes = arquivo
-                                cut_file = PhanterGalleryCutter(
-                                    imageName=imageName,
-                                    imageBytes=imageBytes,
-                                    cutterSizeX=cutterSizeX,
-                                    cutterSizeY=cutterSizeY,
-                                    positionX=positionX,
-                                    positionY=positionY,
-                                    newSizeX=newSizeX,
-                                    newSizeY=newSizeY
-                                )
-                                novo_arquivo = cut_file.getImage()
-                                user_image = UserImage(
-                                    usuario.id, app.config['UPLOAD_FOLDER']
-                                )
-                                user_image.set_image(
-                                    novo_arquivo,
-                                    cut_file.nome_da_imagem,
-                                    cut_file.extensao
-                                )
-
-                        if any([email_alterado,
-                                usuario_alterado,
-                                sobrenome_alterado,
-                                imagem_alterada]):
-                            usuario.send_new_ajax_activation_code()
-                            usuario.activity(
-                                "".join(
-                                    ["RestProfile: Perfil Atualizado com Sucesso"]
-                                )
-                            )
-                            usuario.commit()
-                            usuario = User(id_user=usuario.id)
-                            user_image = UserImage(usuario.id).image
-                            if user_image:
-                                reader = Serialize(
-                                    app.config['SECRET_KEY_USERS'],
-                                    int(timedelta(365).total_seconds())
-                                )
-                                autorization = reader.dumps({'token': token})
-                                url_image_user = api.url_for(
-                                    RestImageUser,
-                                    id_image=user_image.id,
-                                    autorization=autorization,
-                                    _external=True
-                                )
-                            else:
-                                url_image_user = url_for('static', filename="images/user.png")
-                            user_role = "Usuário"
-                            if usuario.roles:
-                                if "administrator" in usuario.roles:
-                                    user_role = "Administrador"
-                                if "root" in usuario.roles:
-                                    user_role = "Super Administrador"
-                            user_roles = ["user"]
-                            if usuario.roles:
-                                user_roles = usuario.roles
-                                if "user" not in user_roles:
-                                    user_roles.append("user")
-                            is_to_remember = usuario.remember_me
-                            email = Markup.escape(usuario.email)
-                            first_name = Markup.escape(usuario.first_name)
-                            last_name = Markup.escape(usuario.last_name)
-                            username = "%s %s" % (first_name, last_name)
-                            return {
-                                "status": "OK",
-                                "message": "Perfil atualizado com sucesso",
-                                'change_email': email_alterado,
-                                'info': {
-                                    'name': username,
-                                    'first_name': first_name,
-                                    'last_name': last_name,
-                                    'url_image_user': url_image_user,
-                                    'user_name': username,
-                                    'remember_me': is_to_remember,
-                                    'role': user_role,
-                                    'roles': user_roles,
-                                    'email': email,
-                                },
-                            }
-                        else:
-                            csrf = CSRF()
-                            csrf_token = csrf.token(proposito="mudar profile sel alteracao")
-                            return {
-                                "status": "ATTENTION",
-                                'csrf': csrf_token,
-                                "message": "Nada foi alterado!"
-                            }
-                    else:
-                        csrf = CSRF()
-                        csrf_token = csrf.token(proposito="mudar profile apos Token CSFR Inválido")
-                        usuario.activity("".join(["RestProfile: Token CSFR Inválido"]))
-                        return {
-                            'status': 'ERROR',
-                            'csrf': csrf_token,
-                            'message': 'Token CSFR Inválido ou Expirado!'
-                        }
-            else:
-                return {
-                    'status': 'ERROR',
-                    'message': 'Usuário Inválido!'
-                }
-        else:
-            return {
-                'status': 'ERROR',
-                'message': 'Problemas ao alterar o perfil!'
-            }
 
 
 class RestPhanterGallery(Resource):
@@ -1018,19 +785,13 @@ class RestLock(Resource):
 
 
 class RestChangePassword(Resource):
-    def get(self):
-        token = request.headers.get('Authorization')
-        t = Serialize(app.config['SECRET_KEY_USERS'], app.config['DEFAULT_TIME_TOKEN_EXPIRES'])
-        try:
-            id_user = t.loads(token)['id_user']
-        except Exception as e:
-            id_user = 0
 
-        if id_user:
-            usuario = User(id_user=id_user)
+    @requires_login(intention_csrf="change_password", defid="RestChangePassword.get")
+    def get(self, *args, **kargs):
+        if ('usuario' in kargs) and ('new_csrf_token' in kargs):
+            usuario = kargs["usuario"]
             if usuario:
-                csrf = CSRF()
-                csrf_token = csrf.token(proposito="change_password")
+                csrf_token = kargs['new_csrf_token']
                 temporary_password = False
                 if (usuario.temporary_password_hash) and (usuario.temporary_password_expire):
                     if datetime.now() < usuario.temporary_password_expire:
@@ -1045,96 +806,44 @@ class RestChangePassword(Resource):
         else:
             return {'status': 'ERROR', 'message': 'Usuário ou/e token Inválido(s)!'}
 
-    def post(self):
+    @requires_login(check_csrf=True, intention_csrf="change_password", defid="RestChangePassword.post")
+    def post(self, *args, **kargs):
+        usuario = kargs["usuario"]
+        csrf_token = kargs['new_csrf_token']
         parser.add_argument('old_password')
         parser.add_argument('password')
         parser.add_argument('password_repeat')
-        parser.add_argument('csrf_token')
         args = parser.parse_args()
         old_password = args['old_password']
         password = args['password']
         password_repeat = args['password_repeat']
-        csrf_token = args['csrf_token']
-        token = request.headers.get('Authorization')
-        t = Serialize(app.config['SECRET_KEY_USERS'], app.config['DEFAULT_TIME_TOKEN_EXPIRES'])
-        try:
-            id_user = t.loads(token)['id_user']
-        except Exception as e:
-            id_user = 0
-        app.logger.debug(id_user)
-        if id_user:
-            usuario = User(id_user=id_user)
-            if usuario:
-                valid_old_password = Validator(old_password)
-                valid_password = Validator(password)
-                valid_password_repeat = Validator(password_repeat)
-                valid_csrf_token = Validator(csrf_token)
-                valid_old_password.isNotEmpty("A senha não pode ser vazia.")
-                valid_password.isEquals(password_repeat, "As senhas não coincidem.")
-                valid_password.isNotEmpty("A senha não pode ser vazia.")
-                valid_password_repeat.isEquals(password, "As senhas não coincidem.")
-                valid_password_repeat.isNotEmpty("O campo não pode ser vazio.")
-                valid_csrf_token.isNotEmpty("CSRF token inválido.")
-                if any([
-                        valid_old_password.has_error,
-                        valid_password.has_error,
-                        valid_password_repeat.has_error,
-                        valid_csrf_token.has_error
-                ]):
-                    csrf = CSRF()
-                    csrf_token = csrf.token(proposito="tentativa após erro")
-                    return {
-                        'status': 'ERROR',
-                        'message': 'Erros nos dados enviados!',
-                        'csrf': csrf_token,
-                        'validators': {
-                            'old_password': valid_old_password.error if valid_old_password.has_error else "OK",
-                            'password': valid_password.error if valid_password.has_error else "OK",
-                            'valid_password_repeat': valid_password_repeat.error if valid_password_repeat.has_error else "OK",
-                            'csrf_token': valid_csrf_token.error if valid_csrf_token.has_error else "OK",
-                        }
-                    }
-                else:
-                    csrf = CSRF()
-                    response_token = csrf.valid_response_token(csrf_token)
-                    if response_token:
-                        if usuario.verify_password(old_password):
-                            usuario.new_password(password, True)
-                            return {
-                                'status': "OK",
-                                'message': "Senha alterada com sucesso!"
-                            }
-                        else:
-                            csrf_token = csrf.token(proposito="tentativa após erro: token inválido")
-                            usuario.activity("RestChangePassword: A senha antiga é inválida")
-                            return {
-                                'status': 'ERROR',
-                                'message': 'Senha antiga inválida!',
-                                'csrf': csrf_token
-                            }
-                    else:
-                        csrf_token = csrf.token(proposito="tentativa após erro: token inválido")
-                        usuario.activity("RestChangePassword: 'csrf_token' inválido")
-                        return {
-                            'status': 'ERROR',
-                            'message': 'Erro no envio!',
-                            'csrf': csrf_token
-                        }
-
-            else:
-                csrf = CSRF()
-                csrf_token = csrf.token(proposito="tentativa após erro: usuário inválido")
-                usuario.activity("RestChangePassword: usuário inválido")
-                return {
-                    'status': 'ERROR',
-                    'message': 'Usuário Inválido',
-                    'csrf': csrf_token
-                }
-        else:
+        validate = ValidateReqArgs(args)
+        validate.isNotEmpty('old_password')
+        validate.isNotEmpty('password')
+        validate.isNotEmpty('password_repeat')
+        validate.isEquals('password', password_repeat, "As senhas não coincidem.")
+        validate.isEquals('password_repeat', password, "As senhas não coincidem.")
+        if validate.anyError:
             return {
                 'status': 'ERROR',
-                'message': "Problemas ao tentar modificar senha!"
+                'message': 'Erros nos dados enviados!',
+                'csrf': csrf_token,
+                'validators': validate.validators
             }
+        else:
+            if usuario.verify_password(old_password):
+                usuario.new_password(password, True)
+                return {
+                    'status': "OK",
+                    'message': "Senha alterada com sucesso!"
+                }
+            else:
+                usuario.activity("RestChangePassword: A senha antiga é inválida")
+                return {
+                    'status': 'ERROR',
+                    'message': 'Senha antiga inválida!',
+                    'csrf': csrf_token
+                }
 
 
 class RestImageUser(Resource):
@@ -1189,20 +898,9 @@ class RestUsers(Resource):
 
     @requires_login(permit_retoken=True)
     def get(self, *args, **kargs):
-        parser.add_argument('Authorization', location='headers')
-        parser.add_argument('csrf_token', location='form')
-        args = parser.parse_args()
-        token = args['Authorization']
-        t = Serialize(
-            app.config['SECRET_KEY_USERS'],
-            app.config['DEFAULT_TIME_TOKEN_EXPIRES']
-        )
-        try:
-            id_user = t.loads(token)['id_user']
-        except Exception as e:
-            id_user = 0
-        if id_user:
-            usuario = User(id_user=id_user)
+        if ('usuario' in kargs) and ('token' in kargs):
+            usuario = kargs['usuario']
+            token = kargs['token']
             if usuario:
                 user_name = Markup.escape("%s %s" % (usuario.first_name, usuario.last_name))
                 if usuario.activated:
@@ -1280,11 +978,12 @@ class RestUsers(Resource):
         validate.isNotEmpty('password_repeat', "Repita a senha.")
         validate.isEquals('password', password_repeat, "As senhas não coincidem.")
         validate.isEquals('password_repeat', password, "As senhas não coincidem.")
-
+        csrf_token = kargs['new_csrf_token']
         if validate.anyError:
             return {
                 'status': 'ERROR',
                 'message': 'Erros nos dados enviados!',
+                'csrf': csrf_token,
                 'validators': validate.validators
             }
         else:
@@ -1336,6 +1035,173 @@ class RestUsers(Resource):
                         'message': 'Já existe uma conta com este email.',
                     }
 
+    @requires_login(check_csrf=True, intention_csrf="profile", defid="RestUsers.put")
+    def put(self, *args, **kargs):
+        token = kargs['token']
+        usuario = kargs['usuario']
+        csrf_token = kargs['new_csrf_token']
+        parser.add_argument('email')
+        parser.add_argument('first_name')
+        parser.add_argument('last_name')
+        parser.add_argument('phantergallery_upload-input-file-profile')
+        parser.add_argument('phantergallery-input-name-cutterSizeX-profile')
+        parser.add_argument('phantergallery-input-name-cutterSizeY-profile')
+        parser.add_argument('phantergallery-input-name-positionX-profile')
+        parser.add_argument('phantergallery-input-name-positionY-profile')
+        parser.add_argument('phantergallery-input-name-newSizeX-profile')
+        parser.add_argument('phantergallery-input-name-newSizeY-profile')
+        args = parser.parse_args()
+        first_name = args['first_name']
+        last_name = args['last_name']
+        new_email = args['email']
+        validate = ValidateReqArgs(args)
+        validate.isNotEmpty("first_name", "O nome não pode ser vazio.")
+        validate.isNotEmpty("last_name", "O sobrenome não pode ser vazio.")
+        validate.isEmail("email", "O email é inválido.")
+        if validate.anyError:
+            return {
+                'status': 'ERROR',
+                'message': 'Erros nos dados enviados!',
+                'csrf': csrf_token,
+                'validators': validate.validators
+            }
+        else:
+            email_now = usuario.email
+            email_alterado = False
+            usuario_alterado = False
+            sobrenome_alterado = False
+            imagem_alterada = False
+            if new_email != email_now:
+                check_email = User(email=new_email)
+                if check_email:
+                    usuario.activity(
+                        "".join(
+                            [
+                                "RestProfile: O usuário tentou mudar o email de ",
+                                email_now, " para ", new_email,
+                                " sem sucesso, o email já está cadastrado"
+                            ]
+                        )
+                    )
+                    return {
+                        'status': 'ERROR',
+                        'csrf': csrf_token,
+                        'message': 'O novo email digitado já existe!',
+                        'validators': {
+                            'first_name': valid_first_name.error if valid_first_name.has_error else "OK",
+                            'last_name': valid_last_name.error if valid_last_name.has_error else "OK",
+                            'email': "O email já existe",
+                        }
+                    }
+                else:
+                    usuario.email = new_email
+                    email_alterado = True
+
+            if(first_name != usuario.first_name):
+                usuario.first_name = first_name
+                usuario_alterado = True
+            if(last_name != usuario.last_name):
+                usuario.last_name = last_name
+                sobrenome_alterado = True
+
+            if 'phantergallery_upload-input-file-profile' in request.files:
+                imagem_alterada = True
+                arquivo = request.files['phantergallery_upload-input-file-profile']
+                cutterSizeX = args['phantergallery-input-name-cutterSizeX-profile']
+                cutterSizeY = args['phantergallery-input-name-cutterSizeY-profile']
+                positionX = args['phantergallery-input-name-positionX-profile']
+                positionY = args['phantergallery-input-name-positionY-profile']
+                newSizeX = args['phantergallery-input-name-newSizeX-profile']
+                newSizeY = args['phantergallery-input-name-newSizeY-profile']
+                if arquivo.filename != '':
+                    imageName = secure_filename(arquivo.filename)
+                    imageBytes = arquivo
+                    cut_file = PhanterGalleryCutter(
+                        imageName=imageName,
+                        imageBytes=imageBytes,
+                        cutterSizeX=cutterSizeX,
+                        cutterSizeY=cutterSizeY,
+                        positionX=positionX,
+                        positionY=positionY,
+                        newSizeX=newSizeX,
+                        newSizeY=newSizeY
+                    )
+                    novo_arquivo = cut_file.getImage()
+                    user_image = UserImage(
+                        usuario.id, app.config['UPLOAD_FOLDER']
+                    )
+                    user_image.set_image(
+                        novo_arquivo,
+                        cut_file.nome_da_imagem,
+                        cut_file.extensao
+                    )
+
+            if any([email_alterado,
+                    usuario_alterado,
+                    sobrenome_alterado,
+                    imagem_alterada]):
+                usuario.send_new_ajax_activation_code()
+                usuario.activity(
+                    "".join(
+                        ["RestProfile: Perfil Atualizado com Sucesso"]
+                    )
+                )
+                usuario.commit()
+                usuario = User(id_user=usuario.id)
+                user_image = UserImage(usuario.id).image
+                if user_image:
+                    reader = Serialize(
+                        app.config['SECRET_KEY_USERS'],
+                        int(timedelta(365).total_seconds())
+                    )
+                    autorization = reader.dumps({'token': token})
+                    url_image_user = api.url_for(
+                        RestImageUser,
+                        id_image=user_image.id,
+                        autorization=autorization,
+                        _external=True
+                    )
+                else:
+                    url_image_user = url_for('static', filename="images/user.png")
+                user_role = "Usuário"
+                if usuario.roles:
+                    if "administrator" in usuario.roles:
+                        user_role = "Administrador"
+                    if "root" in usuario.roles:
+                        user_role = "Super Administrador"
+                user_roles = ["user"]
+                if usuario.roles:
+                    user_roles = usuario.roles
+                    if "user" not in user_roles:
+                        user_roles.append("user")
+                is_to_remember = usuario.remember_me
+                email = Markup.escape(usuario.email)
+                first_name = Markup.escape(usuario.first_name)
+                last_name = Markup.escape(usuario.last_name)
+                username = "%s %s" % (first_name, last_name)
+                return {
+                    "status": "OK",
+                    "message": "Perfil atualizado com sucesso",
+                    'change_email': email_alterado,
+                    'data': {
+                        'id': usuario.id,
+                        'user_name': username,
+                        'first_name': first_name,
+                        'last_name': last_name,
+                        'url_image_user': url_image_user,
+                        'remember_me': is_to_remember,
+                        'role': user_role,
+                        'roles': user_roles,
+                        'email': email,
+                    },
+                }
+            else:
+                return {
+                    "status": "ATTENTION",
+                    'csrf': csrf_token,
+                    "message": "Nada foi alterado!"
+                }
+
 
 class RestServerInfo(Resource):
 
@@ -1369,14 +1235,12 @@ class RestAuthenticater(Resource):
         import base64
         parser.add_argument('basic_authorization', location='form')
         parser.add_argument('remember_me', location='form')
-        parser.add_argument('csrf_token', location='form')
         args = parser.parse_args()
         validate = ValidateReqArgs(args)
         basic_authorization = base64.b64decode(args['basic_authorization'])
         basic_authorization_splitted = basic_authorization.decode('utf-8').split(":")
         email = basic_authorization_splitted.pop(0)
         password = ":".join(basic_authorization_splitted)
-        csrf_token = args['csrf_token']
         remember_me = args['remember_me']
         validate.delArg('basic_authorization')
         validate.updateOrInsertArg("email", email)
@@ -1385,9 +1249,9 @@ class RestAuthenticater(Resource):
         validate.isEmail("email", "O email é inválido.")
         validate.isNotEmpty("password", "A senha não pode ser vazia.")
         app.logger.debug(validate.anyError)
+        csrf_token = kargs['new_csrf_token']
+
         if validate.anyError:
-            csrf = CSRF()
-            csrf_token = csrf.token(proposito="login")
             return {
                 'status': 'ERROR',
                 'message': 'Erros nos dados enviados!',
@@ -1421,8 +1285,6 @@ class RestAuthenticater(Resource):
                         str_tempo = "%s segundos" % (tempo_que_falta.seconds)
                     else:
                         str_tempo = '%s minutos' % (tempo_que_falta.seconds // 60)
-                    csrf = CSRF()
-                    csrf_token = csrf.token(proposito="login")
                     frameinfo = getframeinfo(currentframe())
                     login_error.error(
                         "".join([
@@ -1511,8 +1373,6 @@ class RestAuthenticater(Resource):
                         },
                     }
                 else:
-                    csrf = CSRF()
-                    csrf_token = csrf.token(proposito="login")
                     mult_temp = tentativa_login - 3
                     if tentativa_login > 3:
                         data_next_login = datetime.now() + timedelta(minutes=5 * mult_temp)

@@ -228,6 +228,10 @@ class User(object):
             self._temporary_password = self.data_user.temporary_password
         return self._temporary_password
 
+    @temporary_password.deleter
+    def temporary_password(self):
+        self.temporary_password = None
+
     @temporary_password.setter
     def temporary_password(self, value):
         t = Serialize(app.config['SECRET_KEY_USERS'], timedelta(minutes=10).total_seconds())
@@ -245,6 +249,10 @@ class User(object):
             self._temporary_password_hash = self.data_user.temporary_password_hash
         return self._temporary_password_hash
 
+    @temporary_password_hash.deleter
+    def temporary_password_hash(self):
+        self.temporary_password_hash = None
+
     @temporary_password_hash.setter
     def temporary_password_hash(self, value):
         if self.data_user:
@@ -257,6 +265,10 @@ class User(object):
         if self.data_user:
             self._temporary_password_expire = self.data_user.temporary_password_expire
         return self._temporary_password_expire
+
+    @temporary_password_expire.deleter
+    def temporary_password_expire(self):
+        self.temporary_password_expire = None
 
     @temporary_password_expire.setter
     def temporary_password_expire(self, value):
@@ -489,7 +501,11 @@ class User(object):
                 self.attempts_to_activate = 1
             self.commit()
 
-    def new_password(self, password):
+    def new_password(self, password, reset_temporary_password=False):
+        if reset_temporary_password:
+            del self.temporary_password
+            del self.temporary_password_hash
+            del self.temporary_password_expire
         pass_hash = generate_password_hash("password%s%s" % (password, app.config['SECRET_KEY_USERS']))
         self.password_hash = pass_hash
         self.commit()
@@ -548,7 +564,8 @@ class User(object):
             except KeyError:
                 self.activity("A senha temporária tem um token cujo key apresentou erro!")
             if password:
-                app.logger.debug(password)
+                if app.debug:
+                    app.logger.debug(password)
                 titulo = "Senha temporária de recuperação"
                 text_email = '\tOlá %s %s, foi solicitado uma alteração de senha de uma conta vinculada a este email, utilize a seguinte senha para prosseguir com a alteração: %s.\nBasta acessar o site e logar com esta senha que foi enviada, ela estará ativa apenas 10 minutos.' % (first_name, last_name, password)
                 html_email = '<h3>Olá %s %s,</h3><br /><p>foi solicitado uma alteração de senha de uma conta vinculada a este email, utilize a seguinte senha para prosseguir com a alteração: <b>%s</b></p><p>Basta acessar o site e logar com esta senha que foi enviada, ela estará ativa apenas 10 minutos.</p>' % (first_name, last_name, password)

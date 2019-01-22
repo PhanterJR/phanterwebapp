@@ -16,6 +16,9 @@ body.lock{
     background-repeat: no-repeat;
     background-size: auto 100%;
 }
+#modal_layout{
+    transition: height 1s ease, max-height 1s ease;
+}
   main {
     flex: 1 0 auto;
   }

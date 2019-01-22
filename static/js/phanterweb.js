@@ -940,22 +940,20 @@ $.fn.phanterwebFormValidator = function(){
 
 //check application
 function check_application(){
-    var local_application_info = localStorage.getItem("application")
+    var local_application_info = sessionStorage.getItem("application")
     if(isNotEmpty(local_application_info)){
         var local_application_info_data = JSON.parse(local_application_info)
         var local_application_version = local_application_info_data.version
         var local_application_name = local_application_info_data.name
         if ((local_application_name!=application_name)||(local_application_version!=application_version)){
-            console.error("version and name of application in server change")
-            localStorage.clear();
-            alert("version and name of application in server change")
+            console.info("version and name of application in server change")
+            sessionStorage.clear();
             location.reload()
         }
     } else {
-        console.error("version and name of application in server change")
-        localStorage.clear();
-        alert("version and name of application in server change")
-        localStorage.setItem("application", JSON.stringify(phanterwebCacheDataJS.application))
+        console.info("version and name of application in server change")
+        sessionStorage.clear();
+        sessionStorage.setItem("application", JSON.stringify(phanterwebCacheDataJS.application))
         location.reload()
     }
 }
@@ -1742,7 +1740,7 @@ var PhanterPages = function(){
     MainThis.call_on_principal = function(){};
     MainThis.setCurrentPage = function(pagina, parameters){
         var pagina_padrao = JSON.stringify({"page": "page_main", parameters:null});
-        var currentpage = JSON.parse(localStorage.getItem("currentPage"));
+        var currentpage = JSON.parse(sessionStorage.getItem("currentPage"));
         var pagina_anterior = pagina_padrao;
         var pagina_atual = pagina_padrao;
         if (isNotEmpty(currentpage)){
@@ -1754,17 +1752,17 @@ var PhanterPages = function(){
         } else{
             pagina_atual =  JSON.stringify({"page":pagina, "parameters":null})
         };
-        localStorage.setItem("currentPage", pagina_atual);
+        sessionStorage.setItem("currentPage", pagina_atual);
 
         if (pagina_anterior!=pagina_atual){
-            localStorage.setItem("lastPage", pagina_anterior);
+            sessionStorage.setItem("lastPage", pagina_anterior);
         };
     }
-    if(isNotEmpty(localStorage.getItem('token'))){
-        MainThis.token = localStorage.getItem('token');
+    if(isNotEmpty(sessionStorage.getItem('token'))){
+        MainThis.token = sessionStorage.getItem('token');
     }
-    if(isNotEmpty(localStorage.getItem('id_user'))){
-        MainThis.id_user = localStorage.getItem('id_user');
+    if(isNotEmpty(sessionStorage.getItem('id_user'))){
+        MainThis.id_user = sessionStorage.getItem('id_user');
     }
     MainThis.onCallPrincipal = function(callback){
         if (callback && typeof(callback) === "function"){
@@ -1778,7 +1776,7 @@ var PhanterPages = function(){
     }
     MainThis.reload = function(){
          _print("Reload Acionado")
-        var current = localStorage.getItem("currentPage")
+        var current = sessionStorage.getItem("currentPage")
         if(isNotEmpty(current)){
             current = JSON.parse(current)
             var page="page_main";
@@ -1796,9 +1794,12 @@ var PhanterPages = function(){
         }
     }
     MainThis.responseValidator = function(data){
+        console.error("opa")
         for(x in data.validators){
             var error_men = data.validators[x]
             if (error_men!="OK"){
+                console.error("tem error")
+                console.error("#phanterwebformvalidator-input-error-"+x)
                 $("#phanterwebformvalidator-input-error-"+x)
                     .html(data.validators[x])
                     .addClass("enabled")
@@ -1830,11 +1831,11 @@ var PhanterPages = function(){
                     $(".progressbar-form-modal").removeClass("enabled");
                     if(data.status=="OK"){
                         $("#modal_layout").modal("close");
-                        localStorage.removeItem('lockUser');
-                        localStorage.removeItem('lockLastPage');
-                        localStorage.setItem("token", data.token)
+                        sessionStorage.removeItem('lockUser');
+                        sessionStorage.removeItem('lockLastPage');
+                        sessionStorage.setItem("token", data.token)
                         M.toast({html: "Login efetuado com sucesso"});
-                        localStorage.setItem("lastUser", JSON.stringify({
+                        sessionStorage.setItem("lastUser", JSON.stringify({
                             "url_image_user":data.data.url_image_user,
                             "user_name":data.data.user_name,
                             "remember_me":data.data.remember_me,
@@ -1842,7 +1843,7 @@ var PhanterPages = function(){
                             "roles":data.data.roles,
                             "email":data.data.email
                         }));
-                        localStorage.setItem("loggedUser", JSON.stringify(data.data));
+                        sessionStorage.setItem("loggedUser", JSON.stringify(data.data));
                         if(data.temporary_password){
                             phanterpages.getDataPage("page_change_password", {'aviso':'A senha temporária irá expirar, utilize-a como senha atual para adicionar uma nova senha.'})
                         }else{
@@ -1857,7 +1858,7 @@ var PhanterPages = function(){
                 },
                 headers:{
                     'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                    'Authorization': localStorage.getItem("token")
+                    'Authorization': sessionStorage.getItem("token")
                     },
                 error: function(data){
                     M.toast({html: "Erro na conexão"})
@@ -1874,7 +1875,7 @@ var PhanterPages = function(){
             "onOpenStart":function(){
                 var html_login = JSON.parse(phanterwebCacheDataJS.modals.modal_login);
                 modal_layout.html(html_login);
-                var last_user = JSON.parse(localStorage.getItem("lastUser"))
+                var last_user = JSON.parse(sessionStorage.getItem("lastUser"))
                 if((last_user!==null)&&(last_user!="")&&(last_user!==undefined)){
                     var url_image_user = last_user.url_image_user
                     var user_name = last_user.user_name
@@ -1900,7 +1901,7 @@ var PhanterPages = function(){
                             $(this).slideUp();
                             $("#form-login-button-other-user-container");
                             M.updateTextFields();
-                            localStorage.removeItem("lastUser")
+                            sessionStorage.removeItem("lastUser")
                         });
                     if(remember_me===true){
                         $("#form-login-input-remember_me").attr('checked', 'checked')
@@ -2008,8 +2009,8 @@ var PhanterPages = function(){
                                     if(data.status=="OK"){
                                         M.toast({html: "Registro efetuado com sucesso"});
                                         modal_layout.modal("close");
-                                        localStorage.setItem("token", data.token)
-                                        localStorage.setItem("lastUser", JSON.stringify({
+                                        sessionStorage.setItem("token", data.token)
+                                        sessionStorage.setItem("lastUser", JSON.stringify({
                                             "url_image_user":data.data.url_image_user,
                                             "user_name":data.data.user_name,
                                             "remember_me":data.data.remember_me,
@@ -2017,7 +2018,7 @@ var PhanterPages = function(){
                                             "roles":data.data.roles,
                                             "email":data.data.email
                                         }));
-                                        localStorage.setItem("loggedUser", JSON.stringify(data.data));
+                                        sessionStorage.setItem("loggedUser", JSON.stringify(data.data));
                                         phanterpages.reload();
                                     } else if(data.status=="ERROR"){
                                         M.toast({html: data.message})
@@ -2028,7 +2029,7 @@ var PhanterPages = function(){
                                 },
                                 headers:{
                                     'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                                    'Authorization': localStorage.getItem("token")
+                                    'Authorization': sessionStorage.getItem("token")
                                     },
                                 error: function(data){
                                     M.toast({html: "Erro na conexão"})
@@ -2093,10 +2094,13 @@ var PhanterPages = function(){
                         .off("click.request-password-ajax-button-submit")
                         .on("click.request-password-ajax-button-submit", function(){
                             $(".progressbar-form-modal").addClass("enabled");
+                            $(".phanterwebformvalidator-input-error").each(function(){
+                                $(this).slideUp();
+                            });
                             $.ajax({url:remoteHostAddress+"/api/user/request-password",
                                 type: "POST",
                                 crossOrigin: true,
-                                data: {'email': $("#input-email-request-password").val(),
+                                data: {'email-request-password': $("#input-email-request-password").val(),
                                 'csrf_token': $("#input-csrf_token").val()},
                                 success: function(data, textStatus){
                                     if(data.status=="OK"){
@@ -2105,7 +2109,8 @@ var PhanterPages = function(){
                                         phanterpages.principal()
                                     } else if(data.status=="ERROR"){
                                         M.toast({html: data.message})
-                                         MainThis.getCaptcha("request-password") 
+                                        MainThis.responseValidator(data)
+                                        MainThis.getCaptcha("request-password") 
                                     }
                                     $(".progressbar-form-modal").removeClass("enabled");
 
@@ -2118,7 +2123,7 @@ var PhanterPages = function(){
                                 },
                                 headers:{
                                     'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                                    'Authorization': localStorage.getItem("token")
+                                    'Authorization': sessionStorage.getItem("token")
                                     },
                                 dataType:"json"
                             }); 
@@ -2140,8 +2145,8 @@ var PhanterPages = function(){
         phanterGallery.update(true)
     };
     MainThis.warning = function(){
-        var currentpage = JSON.parse(localStorage.getItem("currentPage"))
-        var lastPage = JSON.parse(localStorage.getItem("lastPage"))
+        var currentpage = JSON.parse(sessionStorage.getItem("currentPage"))
+        var lastPage = JSON.parse(sessionStorage.getItem("lastPage"))
         if(isNotEmpty(currentpage)){
             if(("page" in currentpage)){
                 if(currentpage.page=="page_warning"){
@@ -2175,18 +2180,21 @@ var PhanterPages = function(){
                             "profile",
                             "#form-profile-input-csrf_token", 
                             function(){
-                                $("#form-profile").phanterwebFormValidator();
+                                //$("#form-profile").phanterwebFormValidator();
                             });
                         M.updateTextFields();
                         links_href();
                         $("#profile-ajax-button-save")
                             .off('click.profile-ajax-button-save')
                             .on('click.profile-ajax-button-save', function(){
+                                $(".phanterwebformvalidator-input-error").each(function(){
+                                    $(this).slideUp();
+                                });
                                 $(".main-progress-bar").addClass("enabled");
                                 var formData = new FormData($("form.form-profile")[0]);
                                 //formData.set("phantergallery_upload-input-file-profile", phanterGallery.phanterGalleryObjs[0].getCuttedImage())
-                                $.ajax({url:remoteHostAddress+"/api/user/profile",
-                                    type: "POST",
+                                $.ajax({url:remoteHostAddress+"/api/users",
+                                    type: "PUT",
                                     crossOrigin: true,
                                     data: formData,
                                     cache: false,
@@ -2194,7 +2202,7 @@ var PhanterPages = function(){
                                     processData: false,
                                     success: function(data, textStatus){
                                         if(data.status=="OK"){
-                                            localStorage.setItem("lastUser", JSON.stringify({
+                                            sessionStorage.setItem("lastUser", JSON.stringify({
                                                 "url_image_user":data.data.url_image_user,
                                                 "user_name":data.data.user_name,
                                                 "remember_me":data.data.remember_me,
@@ -2202,17 +2210,19 @@ var PhanterPages = function(){
                                                 "roles":data.data.roles,
                                                 "email":data.data.email
                                             }));
-                                            localStorage.setItem("loggedUser", JSON.stringify(data.data));
+                                            sessionStorage.setItem("loggedUser", JSON.stringify(data.data));
                                             M.toast({html: "Perfil atualizado com sucesso!"})
                                             phanterpages.reload()
 
                                         } else if (data.status=="ATTENTION"){
                                             M.toast({html: data.message})
+                                            MainThis.responseValidator(data)
                                              if('csrf' in data){
                                                 $("#form-profile-input-csrf_token").val(data.csrf)
                                             }
                                         } else if (data.status=="ERROR"){
                                             M.toast({html: data.message})
+                                            MainThis.responseValidator(data)
                                             if('csrf' in data){
                                                 $("#form-profile-input-csrf_token").val(data.csrf)
                                             }
@@ -2221,7 +2231,7 @@ var PhanterPages = function(){
                                     },
                                     headers:{
                                         'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                                        'Authorization': localStorage.getItem("token")
+                                        'Authorization': sessionStorage.getItem("token")
                                         },
                                     error: function(data){
                                         M.toast({html: "Erro na conexão"})
@@ -2259,8 +2269,8 @@ var PhanterPages = function(){
                     $("#echo-user-cmp-login").html(JSON.parse(component_user_nologin));
                     $("#options-top-main-bar-left").html(JSON.parse(component_user_nologin_menu));
                     if (data.authenticated){
-                        localStorage.setItem("lockLastPage", localStorage.getItem("lastPage"))
-                        localStorage.setItem("lockUser", JSON.stringify(data.data))
+                        sessionStorage.setItem("lockLastPage", sessionStorage.getItem("lastPage"))
+                        sessionStorage.setItem("lockUser", JSON.stringify(data.data))
                         $("#form-lock-image-user-url").attr('src', data.data.url_image_user)
                         $("#form-lock-profile-user-name").html(data.data.user_name)
                         $("#form-lock-input-email").val(data.data.email)
@@ -2274,11 +2284,11 @@ var PhanterPages = function(){
                         if(data.data.remember_me==true){
                             $("#form-lock-input-remember_me").attr("checked", "checked");
                         }
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('loggedUser');
-                        localStorage.removeItem('lastUser');
+                        sessionStorage.removeItem('token');
+                        sessionStorage.removeItem('loggedUser');
+                        sessionStorage.removeItem('lastUser');
                     } else {
-                        var datalocal = JSON.parse(localStorage.getItem("lockUser"))
+                        var datalocal = JSON.parse(sessionStorage.getItem("lockUser"))
                         $("#form-lock-image-user-url").attr('src', datalocal.url_image_user)
                         $("#form-lock-profile-user-name").html(datalocal.name)
                         $("#form-lock-input-email").val(datalocal.email)
@@ -2329,12 +2339,12 @@ var PhanterPages = function(){
                                     success: function(data, textStatus){
                                         if(data.status=="OK"){
                                             $(".main-progress-bar").removeClass("enabled");
-                                            localStorage.setItem("currentPage",localStorage.getItem("lockLastPage"))
-                                            localStorage.removeItem('lockUser');
-                                            localStorage.removeItem('lockLastPage');
-                                            localStorage.setItem("token", data.token)
+                                            sessionStorage.setItem("currentPage",sessionStorage.getItem("lockLastPage"))
+                                            sessionStorage.removeItem('lockUser');
+                                            sessionStorage.removeItem('lockLastPage');
+                                            sessionStorage.setItem("token", data.token)
                                             M.toast({html: "Desbloqueado!"});
-                                            localStorage.setItem("lastUser", JSON.stringify({
+                                            sessionStorage.setItem("lastUser", JSON.stringify({
                                                 "url_image_user":data.data.url_image_user,
                                                 "user_name":data.data.user_name,
                                                 "remember_me":data.data.remember_me,
@@ -2342,7 +2352,7 @@ var PhanterPages = function(){
                                                 "roles":data.data.roles,
                                                 "email":data.data.email
                                             }));
-                                            localStorage.setItem("loggedUser", JSON.stringify(data.data));
+                                            sessionStorage.setItem("loggedUser", JSON.stringify(data.data));
                                             phanterpages.reload();
 
 
@@ -2355,7 +2365,7 @@ var PhanterPages = function(){
                                     },
                                     headers:{
                                         'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                                        'Authorization': localStorage.getItem("token")
+                                        'Authorization': sessionStorage.getItem("token")
                                         },
                                     error: function(data){
                                         M.toast({html: "Erro na conexão"})
@@ -2390,7 +2400,7 @@ var PhanterPages = function(){
         M.updateTextFields();
         $("#form-change-password").phanterwebFormValidator();
         MainThis.getCsrfToInput(
-            "change-password",
+            "change_password",
             "#input-csrf_token",
             function(){
                 $("#form-change-password").phanterwebFormValidator();
@@ -2417,7 +2427,7 @@ var PhanterPages = function(){
                     },
                     headers:{
                         'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                        'Authorization': localStorage.getItem("token")
+                        'Authorization': sessionStorage.getItem("token")
                         },
                     error: function(data){
                         M.toast({html: "Erro na conexão"})
@@ -2457,7 +2467,7 @@ var PhanterPages = function(){
                 },
                 headers:{
                     'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                    'Authorization': localStorage.getItem("token")
+                    'Authorization': sessionStorage.getItem("token")
                     },
                 error: function(data){
                     M.toast({html: "Erro na conexão"})
@@ -2491,7 +2501,7 @@ var PhanterPages = function(){
             headers:{
                 'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
                 'Content-Type':'text/html; charset=utf-8',
-                'Authorization': localStorage.getItem("token")
+                'Authorization': sessionStorage.getItem("token")
                 },
             error: function(data){
                 M.toast({html: "Erro na conexão"})
@@ -2521,7 +2531,7 @@ var PhanterPages = function(){
             },
             headers:{
                     'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                    'Authorization':localStorage.getItem('token')
+                    'Authorization':sessionStorage.getItem('token')
             },
             error: function(data){
                 M.toast({html: "Erro na conexão"})
@@ -2571,8 +2581,8 @@ var PhanterPages = function(){
             $("#cmp-bar-usermenu-option-logout, #materialize-component-left-menu-submenu-button-logout")
                 .off('click.cmp-bar-usermenu-option-logout')
                 .on('click.cmp-bar-usermenu-option-logout', function(){
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('loggedUser');
+                    sessionStorage.removeItem('token');
+                    sessionStorage.removeItem('loggedUser');
                     M.toast({html: "Volte sempre!"});
                     phanterpages.principal();
                 });
@@ -2627,7 +2637,7 @@ var PhanterPages = function(){
         _print(pagina, "getDataPage: @pagina")
         _print(parameters, "getDataPage: @parameters")
         var temp_parameters = MainThis.getPamameters(pagina);
-        var currentpage = JSON.parse(localStorage.getItem("currentPage"));
+        var currentpage = JSON.parse(sessionStorage.getItem("currentPage"));
 
         if (isNotEmpty(parameters)){
             MainThis.setCurrentPage(pagina, parameters)
@@ -2637,8 +2647,8 @@ var PhanterPages = function(){
 
         $(".progressbar-form-modal").addClass("enabled");
         $(".main-progress-bar").addClass("enabled");
-        var token = localStorage.getItem("token");
-        var user_info = localStorage.getItem("loggedUser");
+        var token = sessionStorage.getItem("token");
+        var user_info = sessionStorage.getItem("loggedUser");
         if(isNotEmpty(token) && isNotEmpty(user_info)){
             _print(user_info, "Dados do usuário")
             MainThis.addCmdLogged({'data':JSON.parse(user_info)})
@@ -2789,25 +2799,6 @@ var PhanterPages = function(){
                 if(isNotEmpty(parameters)){
                     page_obj.parameters=parameters
                 }
-/*                var temp_parameters = MainThis.getPamameters(pagina);
-                var currentpage = JSON.parse(localStorage.getItem("currentPage"));
-                if(isNotEmpty(currentpage)){
-                    if(pagina==currentpage.page){
-                        MainThis.setCurrentPage(pagina, temp_parameters);
-                    } else {
-                        if (isNotEmpty(parameters)){
-                            MainThis.setCurrentPage(pagina, parameters)
-                        } else{
-                            MainThis.setCurrentPage(pagina, null);
-                        }
-                    };
-                } else{
-                    if (isNotEmpty(parameters)){
-                        MainThis.setCurrentPage(pagina, parameters)
-                    } else{
-                        MainThis.setCurrentPage(pagina, null);
-                    }
-                }*/
                 if(("can_access" in page_obj)||("buttons" in page_obj)){
                     var need_info = false;
                     if("buttons" in page_obj){
@@ -2825,7 +2816,7 @@ var PhanterPages = function(){
                                 if(data.status=="OK"){
                                     if("token" in data){
                                         console.error("apareceu o token")
-                                        localStorage.setItem("token", data.token)
+                                        sessionStorage.setItem("token", data.token)
                                         $("#url_image_user").attr('src', data.data.url_image_user)
                                         $("#materialize-component-left-menu-url-imagem-user").attr('src', data.data.url_image_user)
                                         $("#form-login-image-user-url").attr('src', data.data.url_image_user)
@@ -2840,7 +2831,7 @@ var PhanterPages = function(){
                                             calc_role = "Super Administrador"
                                         };
                                         $("#user_role_login").text(calc_role)
-                                        localStorage.setItem("lastUser", JSON.stringify({
+                                        sessionStorage.setItem("lastUser", JSON.stringify({
                                             "url_image_user":data.data.url_image_user,
                                             "user_name":data.data.user_name,
                                             "remember_me":data.data.remember_me,
@@ -2848,7 +2839,7 @@ var PhanterPages = function(){
                                             "roles":data.data.roles,
                                             "email":data.data.email
                                         }));
-                                        localStorage.setItem("loggedUser", JSON.stringify(data.data));
+                                        sessionStorage.setItem("loggedUser", JSON.stringify(data.data));
                                     }
                                     console.error("nada de nada")
                                     if (data.authenticated){
@@ -2878,6 +2869,8 @@ var PhanterPages = function(){
                                                                     phanterpages.principal();
                                                                 } else if(data.status=="ERROR"){
                                                                     M.toast({html: data.message})
+                                                                $(".progressbar-form-modal").removeClass("enabled");
+                                                                $(".main-progress-bar").removeClass("enabled");
                                                                 }
                                                             },
                                                             error: function(data){
@@ -2888,7 +2881,7 @@ var PhanterPages = function(){
                                                             },
                                                             headers:{
                                                                 'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                                                                'Authorization': localStorage.getItem("token")
+                                                                'Authorization': sessionStorage.getItem("token")
                                                                 },
                                                             dataType:"json"
                                                         });
@@ -2921,7 +2914,7 @@ var PhanterPages = function(){
                                                         },
                                                         headers:{
                                                             'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                                                            'Authorization': localStorage.getItem("token")
+                                                            'Authorization': sessionStorage.getItem("token")
                                                             },
                                                         dataType:"json"
                                                     });
@@ -2933,11 +2926,11 @@ var PhanterPages = function(){
                                             $(this).removeClass("enabled");
                                         });
 
-                                        var has_token = localStorage.getItem("token");
+                                        var has_token = sessionStorage.getItem("token");
                                         if(isNotEmpty(has_token)){
                                             M.toast({html: "Token expirado!"})
-                                            localStorage.removeItem("loggedUser")
-                                            localStorage.removeItem("token")
+                                            sessionStorage.removeItem("loggedUser")
+                                            sessionStorage.removeItem("token")
                                             MainThis.principal();
                                         }
                                     };
@@ -2948,11 +2941,11 @@ var PhanterPages = function(){
                                             $(this).removeClass("enabled");
                                         });
 
-                                        var has_token = localStorage.getItem("token");
+                                        var has_token = sessionStorage.getItem("token");
                                         if(isNotEmpty(has_token)){
                                             M.toast({html: "Token expirado!"})
-                                            localStorage.removeItem("loggedUser")
-                                            localStorage.removeItem("token")
+                                            sessionStorage.removeItem("loggedUser")
+                                            sessionStorage.removeItem("token")
                                             MainThis.principal();
                                         }
                                     }
@@ -2970,25 +2963,6 @@ var PhanterPages = function(){
                     }
                 }
             } else {
-/*                var temp_parameters = MainThis.getPamameters(pagina);
-                var currentpage = JSON.parse(localStorage.getItem("currentPage"));
-                if(isNotEmpty(currentpage)){
-                    if(pagina==currentpage.page){
-                        MainThis.setCurrentPage(pagina, temp_parameters);
-                    } else {
-                        if (isNotEmpty(parameters)){
-                            MainThis.setCurrentPage(pagina, parameters)
-                        } else{
-                            MainThis.setCurrentPage(pagina, null);
-                        }
-                    };
-                } else{
-                    if (isNotEmpty(parameters)){
-                        MainThis.setCurrentPage(pagina, parameters)
-                    } else{
-                        MainThis.setCurrentPage(pagina, null);
-                    }
-                }*/
                 html = JSON.parse(phanterwebCacheDataJS.pages[pagina])
                 $("#main-container").html(html);
                 ajustar_imagem();
@@ -3044,7 +3018,7 @@ var PhanterPages = function(){
             },
             headers:{
                 'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                'Authorization': localStorage.getItem("token")
+                'Authorization': sessionStorage.getItem("token")
                 },
             error: function(data){
                 M.toast({html: "Erro na conexão"})
@@ -3106,7 +3080,7 @@ var PhanterPages = function(){
         ComponenteMenu.init();
     };
     MainThis.getPamameters = function(){
-        var currentpage = JSON.parse(localStorage.getItem("currentPage"));
+        var currentpage = JSON.parse(sessionStorage.getItem("currentPage"));
         if(isNotEmpty(currentpage)){
             return currentpage.parameters
         } else {
@@ -3114,17 +3088,17 @@ var PhanterPages = function(){
         }
     };
     MainThis.resetParameters = function(){
-        var currentpage = JSON.parse(localStorage.getItem("currentPage"));
+        var currentpage = JSON.parse(sessionStorage.getItem("currentPage"));
         currentpage.parameters = {};
-        localStorage.setItem("currentPage", JSON.stringify(currentpage));       
+        sessionStorage.setItem("currentPage", JSON.stringify(currentpage));       
     };
     MainThis.setParameters = function(parameters){
-        var currentpage = JSON.parse(localStorage.getItem("currentPage"));
+        var currentpage = JSON.parse(sessionStorage.getItem("currentPage"));
         currentpage.parameters = parameters;
-        localStorage.setItem("currentPage", JSON.stringify(currentpage));
+        sessionStorage.setItem("currentPage", JSON.stringify(currentpage));
     };
     MainThis.setParameter = function(parameter, value){
-        var currentpage = JSON.parse(localStorage.getItem("currentPage"));
+        var currentpage = JSON.parse(sessionStorage.getItem("currentPage"));
         if(isNotEmpty(currentpage.parameters)){
             currentpage.parameters[parameter] = value;
         } else {
@@ -3133,14 +3107,14 @@ var PhanterPages = function(){
             parameters[""+parameter] = value
             currentpage.parameters = parameters
         };
-        localStorage.setItem("currentPage", JSON.stringify(currentpage));       
+        sessionStorage.setItem("currentPage", JSON.stringify(currentpage));       
     };
     MainThis.delParameter = function(parameter){
-        var currentpage = JSON.parse(localStorage.getItem("currentPage"));
+        var currentpage = JSON.parse(sessionStorage.getItem("currentPage"));
         if(isNotEmpty(currentpage.parameters)){
             delete currentpage.parameters[parameter]
         }
-        localStorage.setItem("currentPage", JSON.stringify(currentpage));
+        sessionStorage.setItem("currentPage", JSON.stringify(currentpage));
     };
 };
 var phanterpages = new PhanterPages();
@@ -3161,14 +3135,14 @@ function links_href(){
 }
 
 // _prints
-_print({"currentPage":localStorage.getItem("currentPage"), "lastPage": localStorage.getItem("lastPage")});
+_print({"currentPage":sessionStorage.getItem("currentPage"), "lastPage": sessionStorage.getItem("lastPage")});
 //touch events
 
 
 var PHANTERWEB = function(parameters){
     this.init = function(){
         //materializecss
-        var target_page=JSON.parse(localStorage.getItem("currentPage"))
+        var target_page=JSON.parse(sessionStorage.getItem("currentPage"))
         if(isNotEmpty(target_page)){
             phanterpages.getDataPage(target_page.page, target_page.parameters);
 
