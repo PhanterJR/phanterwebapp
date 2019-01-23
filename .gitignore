@@ -108,3 +108,11 @@ config.ini
 uploads/[a-zAz]*
 *.sqlite
 *.ffs_db
+.idea/workspace.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/phanterwebapp.iml
+.idea/inspectionProfiles/profiles_settings.xml
+centos/flask_phanterwebapp.ini
+centos/phanterwebapp_app.py
+centos/reload_uwsgi_flask_phanterwebapp.sh

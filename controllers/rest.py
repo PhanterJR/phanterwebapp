@@ -9,7 +9,7 @@ from .. import (
 from inspect import currentframe, getframeinfo
 from ..models import User, CSRF, ErrorLog
 from ..models.phantergallery import UserImage
-from phanterweb.validators import Validator, ValidateReqArgs
+from phanterweb.validators import ValidateReqArgs
 from phanterweb.phantergallery import PhanterGalleryCutter
 from phanterweb.captcha import Captcha
 from flask import request, url_for, Markup, send_from_directory
@@ -61,7 +61,7 @@ def requires_login(
                             return {
                                 'status': "ERROR",
                                 'authenticated': False,
-                                'data': None,
+                                'auth_user': None,
                                 'roles': ['Anônimo'],
                                 'message': "Não tem autoriação",
                             }, 401
@@ -86,7 +86,7 @@ def requires_login(
                             return {
                                 'status': "ERROR",
                                 'authenticated': False,
-                                'data': None,
+                                'auth_user': None,
                                 'roles': ['Anônimo'],
                                 'message': "Erro no envio dos dados, tente novamente!",
                                 'csrf': csrf_token,
@@ -100,7 +100,7 @@ def requires_login(
                                         "file: %s" % frameinfo.filename,
                                         "\nline: %s" % frameinfo.lineno,
                                         "\ndef: %s" % defid,
-                                        "\nmessage: token  válido sendo usado para ",
+                                        "\nmessage: token csrf válido sendo usado para ",
                                         intention_csrf,
                                         " porém gerado com propósito diferente: ",
                                         proposito
@@ -109,7 +109,7 @@ def requires_login(
                                 return {
                                     'status': "ERROR",
                                     'authenticated': False,
-                                    'data': None,
+                                    'auth_user': None,
                                     'roles': ['Anônimo'],
                                     'message': "Token csrf inválido!",
                                 }
@@ -133,7 +133,7 @@ def requires_login(
                     return {
                         'status': 'ERROR',
                         'authenticated': False,
-                        'data': None,
+                        'auth_user': None,
                         'roles': ['Anônimo'],
                         'message': 'Usuário não localizado'
                     }
@@ -188,7 +188,7 @@ def requires_login(
                                 'status': 'OK',
                                 'authenticated': True,
                                 'token': new_token.decode('utf-8'),
-                                'data': {
+                                'auth_user': {
                                     'id': usuario.id,
                                     'user_name': user_name,
                                     'first_name': first_name,
@@ -215,7 +215,7 @@ def requires_login(
                             return {
                                 'status': 'ERROR',
                                 'authenticated': False,
-                                'data': None,
+                                'auth_user': None,
                                 'roles': ['Anônimo'],
                                 'message': 'Token inválido ou expirado, faça login novamente!'
                             }
@@ -233,7 +233,7 @@ def requires_login(
                 return {
                     'status': 'ERROR',
                     'authenticated': False,
-                    'data': None,
+                    'auth_user': None,
                     'roles': ['Anônimo'],
                     'message': 'Token inválido ou expirado, faça login novamente!'
                 }
@@ -327,190 +327,6 @@ class RestCSRF(Resource):
         csrf = CSRF()
         token = csrf.token(proposito=prop)
         return {"status": "OK", "token_captcha": token, "csrf": token}
-
-
-class RestLogin(Resource):
-    """
-        url: /api/login
-    """
-
-    def post(self):
-        import base64
-        parser.add_argument('basic_authorization')
-        parser.add_argument('remember_me')
-        parser.add_argument('csrf_token')
-        args = parser.parse_args()
-        basic_authorization = base64.b64decode(args['basic_authorization'])
-        basic_authorization_splitted = basic_authorization.decode('utf-8').split(":")
-        email = basic_authorization_splitted.pop(0)
-        password = ":".join(basic_authorization_splitted)
-        csrf_token = args['csrf_token']
-        remember_me = args['remember_me']
-        app.logger.debug(email)
-        app.logger.debug(password)
-        valid_email = Validator(email)
-        valid_email.isNotEmpty("O email não pode ser vazio.")
-        valid_email.isEmail("O email é inválido.")
-        valid_password = Validator(password)
-        valid_password.isNotEmpty("A senha não pode ser vazia.")
-        valid_csrf_token = Validator(csrf_token)
-        valid_csrf_token.isNotEmpty("CSRF token inválido.")
-
-        if any([
-                valid_email.has_error,
-                valid_password.has_error,
-                valid_csrf_token.has_error,
-        ]):
-            return {
-                'status': 'ERROR',
-                'message': 'Erros nos dados enviados!',
-                'validators': {
-                    'email': valid_email.error if valid_email.has_error else "OK",
-                    'password': valid_password.error if valid_password.has_error else "OK",
-                    'csrf_token': valid_csrf_token.error if valid_csrf_token.has_error else "OK",
-                }
-            }
-        else:
-            if remember_me == "on":
-                is_to_remember = True
-            else:
-                is_to_remember = False
-            csrf = CSRF()
-            response_token = csrf.valid_response_token(csrf_token)
-            if response_token:
-                can_login = False
-                usuario = User(email=email)
-                tempo_que_falta = timedelta(seconds=0)
-                tentativa_login = usuario.attempts_to_login
-                data_next_login = usuario.datetime_next_attempt_to_login
-                if data_next_login is not None:
-                    tempo_que_falta = data_next_login - datetime.now()
-                if tentativa_login is None:
-                    usuario.attempts_to_login = 0
-                    usuario.commit()
-                    tentativa_login = 0
-                    can_login = True
-                elif tentativa_login > 3 and data_next_login:
-                    if data_next_login < datetime.now():
-                        can_login = True
-                    else:
-                        csrf = CSRF()
-                        csrf_token = csrf.token(proposito="Tentativa apos senha errada")
-                        if tempo_que_falta.seconds < 60:
-                            str_tempo = "%s segundos" % (tempo_que_falta.seconds)
-                        else:
-                            str_tempo = '%s minutos' % (tempo_que_falta.seconds // 60)
-                        return {
-                            'status': 'ERROR',
-                            'csrf': csrf_token,
-                            'message': 'Aguarde %s para próxima tentativa' % (str_tempo),
-                        }
-                else:
-                    can_login = True
-                mult_temp = tentativa_login - 3
-                if can_login:
-                    try:
-                        usuario.attempts_to_login += 1
-                    except TypeError as e:
-                        usuario.attempts_to_login = 0
-                    usuario.commit()
-                    tentativa_login += 1
-                    if usuario.verify_password(password):
-                        if (usuario.temporary_password_hash) and (usuario.temporary_password_expire):
-                            temporary_password = True
-                        else:
-                            temporary_password = False
-                        usuario.remember_me = is_to_remember
-                        if usuario.activated:
-                            activated = True
-                        else:
-                            activated = False
-                        token = usuario.token
-                        user_name = "%s %s" % (usuario.first_name, usuario.last_name)
-                        user_role = "Usuário"
-                        if usuario.roles:
-                            if "administrator" in usuario.roles:
-                                user_role = "Administrador"
-                            if "root" in usuario.roles:
-                                user_role = "Super Administrador"
-                        user_roles = ["user"]
-                        if usuario.roles:
-                            user_roles = usuario.roles
-                            if "user" not in user_roles:
-                                user_roles.append("user")
-                        user_image = UserImage(usuario.id).image
-                        if user_image:
-                            reader = Serialize(
-                                app.config['SECRET_KEY_USERS'], int(timedelta(365).total_seconds())
-                            )
-                            autorization = reader.dumps(
-                                {'token': token.decode('utf-8')}
-                            )
-                            url_image_user = api.url_for(
-                                RestImageUser,
-                                id_image=user_image.id,
-                                autorization=autorization,
-                                _external=True
-                            )
-                        else:
-                            url_image_user = url_for('static', filename="images/user.png")
-                        usuario.attempts_to_login = 0
-                        usuario.commit()
-                        return {
-                            'status': 'OK',
-                            'id_user': '%s' % (usuario.id),
-                            'token': '%s' % (token.decode('utf-8')),
-                            'activated': activated,
-                            'temporary_password': temporary_password,
-                            'csrf': csrf_token,
-                            'data_user': {
-                                'url_image_user': url_image_user,
-                                'user_name': Markup.escape(user_name),
-                                'remember_me': is_to_remember,
-                                'user_role': user_role,
-                                'email': Markup.escape(email),
-                            },
-                            'info': {
-                                'name': Markup.escape(user_name),
-                                'first_name': Markup.escape(usuario.first_name),
-                                'last_name': Markup.escape(usuario.last_name),
-                                'url_image_user': url_image_user,
-                                'user_name': Markup.escape(user_name),
-                                'remember_me': is_to_remember,
-                                'role': user_role,
-                                'roles': user_roles,
-                                'email': Markup.escape(email),
-                            },
-                        }
-                    else:
-                        csrf = CSRF()
-                        csrf_token = csrf.token(proposito="Senha Errada")
-                        mult_temp = tentativa_login - 3
-                        if tentativa_login > 3:
-                            data_next_login = datetime.now() + timedelta(minutes=5 * mult_temp)
-                            usuario.datetime_next_attempt_to_login = data_next_login
-                            usuario.commit()
-                            tempo_que_falta = data_next_login - datetime.now()
-                            if tempo_que_falta.seconds < 60:
-                                str_tempo = "%s segundos" % (tempo_que_falta.seconds)
-                            else:
-                                str_tempo = '%s minutos' % (tempo_que_falta.seconds // 60)
-                            return {
-                                'status': 'ERROR',
-                                'csrf': csrf_token,
-                                'message': 'Senha inválida! próxima tentativa em %s' % (str_tempo),
-                            }
-                        else:
-                            if tentativa_login == 3:
-                                usuario.datetime_next_attempt_to_login = datetime.now()
-                                usuario.commit()
-                            return {
-                                'status': 'ERROR',
-                                'csrf': csrf_token,
-                                'message': 'Senha inválida! Tentativa %s de 3' % tentativa_login
-                            }
-            else:
-                return {'status': 'ERROR', 'message': 'Erro no envio!', 'codigo': 'login01'}
 
 
 class RestCaptcha(Resource):
@@ -675,115 +491,6 @@ class RestRequestPassword(Resource):
                 }
 
 
-class RestProfile(Resource):
-    def get(self):
-        token = request.headers.get('Authorization')
-        t = Serialize(app.config['SECRET_KEY_USERS'], app.config['DEFAULT_TIME_TOKEN_EXPIRES'])
-        try:
-            id_user = t.loads(token)['id_user']
-        except Exception as e:
-            id_user = 0
-
-        if id_user:
-            usuario = User(id_user=id_user)
-            if usuario:
-                user_image = UserImage(usuario.id).image
-                if user_image:
-                    id_image = user_image.id
-                else:
-                    id_image = None
-                return {
-                    'status': 'OK',
-                    'data_user': {
-                        'first_name': Markup.escape(usuario.first_name),
-                        'last_name': Markup.escape(usuario.last_name),
-                        'email': Markup.escape(usuario.email),
-                        'id_image': id_image,
-                    }
-                }
-            else:
-                return {'status': 'ERROR', 'message': 'Usuário ou/e token Inválido(s)!'}
-
-
-class RestPhanterGallery(Resource):
-    def get(self, section):
-        if section == "profile":
-            token = request.headers.get('Autorization')
-            id_user = request.headers.get('Autorization-User')
-            usuario = User(id_user=id_user)
-            user_image = UserImage(usuario.id).image
-            if user_image:
-                reader = Serialize(
-                    app.config['SECRET_KEY_USERS'], int(timedelta(365).total_seconds())
-                )
-                autorization = reader.dumps({'token': token})
-                url_image_user = api.url_for(
-                    RestImageUser,
-                    id_image=user_image.id,
-                    autorization=autorization,
-                    _external=True
-                )
-            else:
-                url_image_user = url_for('static', filename="images/user.png")
-            return {
-                'status': 'OK',
-                'data_user': {'url_image_user': url_image_user},
-            }
-
-
-class RestLock(Resource):
-    def get(self):
-        token = request.headers.get('Authorization')
-        t = Serialize(app.config['SECRET_KEY_USERS'], app.config['DEFAULT_TIME_TOKEN_EXPIRES'])
-        try:
-            id_user = t.loads(token)['id_user']
-        except Exception as e:
-            id_user = 0
-        if id_user:
-            usuario = User(id_user=id_user)
-            if usuario:
-                user_name = "%s %s" % (usuario.first_name, usuario.last_name)
-                user_role = "Usuário"
-                is_to_remember = usuario.remember_me
-                csrf = CSRF()
-                csrf_token = csrf.token(proposito="lock")
-                email = usuario.email
-                user_image = UserImage(usuario.id).image
-                if user_image:
-                    reader = Serialize(
-                        app.config['SECRET_KEY_USERS'], int(timedelta(365).total_seconds())
-                    )
-                    autorization = reader.dumps({'token': token})
-                    url_image_user = api.url_for(
-                        RestImageUser,
-                        id_image=user_image.id,
-                        autorization=autorization,
-                        _external=True
-                    )
-                else:
-                    url_image_user = url_for('static', filename="images/user.png")
-                return {
-                    'status': 'OK',
-                    'csrf': csrf_token,
-                    'data_user': {
-                        'url_image_user': url_image_user,
-                        'user_name': Markup.escape(user_name),
-                        'remember_me': is_to_remember,
-                        'user_role': user_role,
-                        'email': Markup.escape(email),
-                    }
-                }
-            else:
-                return {
-                    'status': 'ERROR',
-                    'message': 'Conta Expirada!'
-                }
-        return {
-            'status': 'ERROR',
-            'message': 'Conta Expirada!'
-        }
-
-
 class RestChangePassword(Resource):
 
     @requires_login(intention_csrf="change_password", defid="RestChangePassword.get")
@@ -942,7 +649,7 @@ class RestUsers(Resource):
                 return {
                     'status': 'OK',
                     'authenticated': True,
-                    'data': {
+                    'auth_user': {
                         'id': usuario.id,
                         'user_name': user_name,
                         'first_name': first_name,
@@ -1017,7 +724,7 @@ class RestUsers(Resource):
                         'id_user': '%s' % (new_user.id),
                         'token': '%s' % (new_user.token.decode('utf-8')),
                         'message': 'Usuário criado com sucesso!',
-                        'data': {
+                        'auth_user': {
                             'id': new_user.id,
                             'user_name': Markup.escape("%s %s" % (first_name, last_name)),
                             'first_name': Markup.escape(first_name),
@@ -1077,7 +784,7 @@ class RestUsers(Resource):
                     usuario.activity(
                         "".join(
                             [
-                                "RestProfile: O usuário tentou mudar o email de ",
+                                "RestUsers: O usuário tentou mudar o email de ",
                                 email_now, " para ", new_email,
                                 " sem sucesso, o email já está cadastrado"
                             ]
@@ -1143,7 +850,7 @@ class RestUsers(Resource):
                 usuario.send_new_ajax_activation_code()
                 usuario.activity(
                     "".join(
-                        ["RestProfile: Perfil Atualizado com Sucesso"]
+                        ["RestUsers: Perfil Atualizado com Sucesso"]
                     )
                 )
                 usuario.commit()
@@ -1183,7 +890,7 @@ class RestUsers(Resource):
                     "status": "OK",
                     "message": "Perfil atualizado com sucesso",
                     'change_email': email_alterado,
-                    'data': {
+                    'auth_user': {
                         'id': usuario.id,
                         'user_name': username,
                         'first_name': first_name,
@@ -1360,7 +1067,7 @@ class RestAuthenticater(Resource):
                         'token': '%s' % (token.decode('utf-8')),
                         'activated': activated,
                         'temporary_password': temporary_password,
-                        'data': {
+                        'auth_user': {
                             'id': (usuario.id),
                             'email': Markup.escape(email),
                             'user_name': Markup.escape(user_name),
@@ -1431,16 +1138,12 @@ class RestAuthenticater(Resource):
 
 
 api.add_resource(HelloWorld, '/api')
-api.add_resource(RestLogin, '/api/user/login')
-api.add_resource(RestProfile, '/api/user/profile')
-api.add_resource(RestLock, '/api/user/lock')
 api.add_resource(RestImageUser, '/api/user/image/<int:id_image>/<autorization>')
 api.add_resource(RestActive, '/api/user/active-code')
 api.add_resource(RestRequestPassword, '/api/user/request-password')
 api.add_resource(RestChangePassword, '/api/user/change-password')
 api.add_resource(RestCSRF, '/api/csrf')
 api.add_resource(RestCaptcha, '/api/captcha')
-api.add_resource(RestPhanterGallery, '/api/phantergallery/<section>')
 api.add_resource(RestUsers, '/api/users')
 api.add_resource(RestServerInfo, '/api/server')
 api.add_resource(RestAuthenticater, '/api/authenticater')

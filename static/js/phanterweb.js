@@ -323,6 +323,108 @@ function isACTIVATIONCODE(code){
     var regex = /^\d{5}/
     return regex.test(code)
 }
+$.fn.phanterwebChips = function(listobjchips) {
+    var MainThis = this;
+    var Mainid = $(this).attr("id")
+    MainThis.listobjchips = listobjchips;
+    var list_ids_permits = [];
+    for (var i = 0; i < MainThis.listobjchips.length; i++) {
+        list_ids_permits.push(MainThis.listobjchips[i].id);
+    }
+    var inputname = $(this).find("input").attr("name");
+    
+    var val_input = []
+    if(isNotEmpty($(this).find("input").val())){
+        var val_input = JSON.parse($(this).find("input").val());
+    } else{
+        val_input = [];
+    }
+    var new_val_input_just_ids = [];
+    for (var i = 0; i < val_input.length; i++) {
+        var id_in = val_input[i].id
+        if(list_ids_permits.indexOf(id_in)>-1){
+            new_val_input_just_ids.push(id_in)
+        }
+    }
+    for(var i=0; i<MainThis.listobjchips.length; i++){
+        var id_lis = MainThis.listobjchips[i].id
+        if(new_val_input_just_ids.indexOf(id_lis)>-1){
+            MainThis.listobjchips[i]['enabled'] = true
+        } else {
+            MainThis.listobjchips[i]['enabled'] = false
+        }
+    }
+    this.init = function(listas){
+        not_empty = false;
+        var els_enableds = []
+        for(var i=0; i<listas.length; i++){
+            var id_bj = "phanterwebchip-"+inputname+"-"+listas[i].id
+            if(listas[i].enabled){
+                not_empty=true;
+                els_enableds.push(listas[i])
+                var chip_obj = "<div id=\""+id_bj+"\" class=\"phanterwebchip phanterwebchip-"+inputname+" enabled waves-effect waves-light\" data-chip='"+JSON.stringify(listas[i])+"'>"+listas[i].destino+"<i class=\"tiny material-icons clear-phanterwebchip\">clear</i></div>"
+                $("#materialize-input-phanterwebformchips_"+inputname).append(chip_obj);
+                $("#"+id_bj).off('click.chips').on('click.chips', function(){
+                    $("#"+id_bj).off('click.chips')
+                    var new_list_obj = []
+                    var elf = $(this)[0]
+                    $(".phanterwebchip.phanterwebchip-"+inputname).each(function(){
+                        var ooobj = $(this).data("chip")
+                        var id_int = $(this).attr("id");
+                        var id_button = id_bj
+                        if($(this)[0]==elf){
+                            ooobj.enabled = false;
+                        } else {
+
+                        }
+                        new_list_obj.push(ooobj)
+                    });
+                    $("#materialize-input-phanterwebformchips_"+inputname).empty();
+                    $("#materialize-input-chips-options-"+inputname).empty();
+                    MainThis.init(new_list_obj)
+                });
+            } else {
+                listas[i].enabled=false
+                var chip_obj = "<div id=\""+id_bj+"\" class=\"phanterwebchip phanterwebchip-"+inputname+" waves-effect waves-light\" data-chip='"+JSON.stringify(listas[i])+"'><i class=\"tiny material-icons add-phanterwebchip\">add</i>"+listas[i].destino+"</div>"
+                $("#materialize-input-chips-options-"+inputname).append(chip_obj);
+                $("#"+id_bj).off('click.chips').on('click.chips', function(){
+                    $("#"+id_bj).off('click.chips')
+                    var new_list_obj = []
+                    var elf = $(this)[0]
+                    $(".phanterwebchip.phanterwebchip-"+inputname).each(function(){
+                        var ooobj = $(this).data("chip")
+                        var id_int = $(this).attr("id");
+                        var id_button = id_bj
+                        if( $(this)[0]==elf){
+                            ooobj.enabled = true;
+                        } else {
+
+                        }
+                        new_list_obj.push(ooobj)
+                    });
+                    $("#materialize-input-phanterwebformchips_"+inputname).empty();
+                    $("#materialize-input-chips-options-"+inputname).empty();
+                    MainThis.init(new_list_obj)
+                });
+            }
+        };
+        $("input[name='"+inputname+"']").val(JSON.stringify(els_enableds));
+        if(not_empty){
+            $("#"+Mainid).find("label").addClass("active")
+            $("#materialize-input-phanterwebformchips_"+inputname)
+                .attr("tabindex",-1)
+                .focus()
+                .addClass("active");
+        } else {
+            $("#"+Mainid).find("label").removeClass("active")
+            $("#materialize-input-phanterwebformchips_"+inputname)
+                .attr("tabindex",-1)
+                .focus()
+                .removeClass("active");
+        }
+    }
+    this.init(listobjchips);
+};
 //phantermask
 $.fn.phanterMask = function(mask, parameters) {
     var custom_mask = "";
@@ -1794,12 +1896,9 @@ var PhanterPages = function(){
         }
     }
     MainThis.responseValidator = function(data){
-        console.error("opa")
         for(x in data.validators){
             var error_men = data.validators[x]
             if (error_men!="OK"){
-                console.error("tem error")
-                console.error("#phanterwebformvalidator-input-error-"+x)
                 $("#phanterwebformvalidator-input-error-"+x)
                     .html(data.validators[x])
                     .addClass("enabled")
@@ -1836,14 +1935,14 @@ var PhanterPages = function(){
                         sessionStorage.setItem("token", data.token)
                         M.toast({html: "Login efetuado com sucesso"});
                         sessionStorage.setItem("lastUser", JSON.stringify({
-                            "url_image_user":data.data.url_image_user,
-                            "user_name":data.data.user_name,
-                            "remember_me":data.data.remember_me,
-                            "user_role":data.data.role,
-                            "roles":data.data.roles,
-                            "email":data.data.email
+                            "url_image_user":data.auth_user.url_image_user,
+                            "user_name":data.auth_user.user_name,
+                            "remember_me":data.auth_user.remember_me,
+                            "user_role":data.auth_user.role,
+                            "roles":data.auth_user.roles,
+                            "email":data.auth_user.email
                         }));
-                        sessionStorage.setItem("loggedUser", JSON.stringify(data.data));
+                        sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
                         if(data.temporary_password){
                             phanterpages.getDataPage("page_change_password", {'aviso':'A senha temporária irá expirar, utilize-a como senha atual para adicionar uma nova senha.'})
                         }else{
@@ -1947,11 +2046,9 @@ var PhanterPages = function(){
                 MainThis.getCaptcha("login");
                 var id_parent_input_email = $("#form-login-input-email").parent().parent().is(":hidden")
                 if(id_parent_input_email=="form-login-input-email-hidden-switch"){
-                    console.log("ooouuu")
                     $("#form-login-input-password").focus();
                 } else {
                     $("#form-login-input-email").focus();
-                    console.log("ieieie")
                 }
             },
         });
@@ -2011,14 +2108,14 @@ var PhanterPages = function(){
                                         modal_layout.modal("close");
                                         sessionStorage.setItem("token", data.token)
                                         sessionStorage.setItem("lastUser", JSON.stringify({
-                                            "url_image_user":data.data.url_image_user,
-                                            "user_name":data.data.user_name,
-                                            "remember_me":data.data.remember_me,
-                                            "user_role":data.data.role,
-                                            "roles":data.data.roles,
-                                            "email":data.data.email
+                                            "url_image_user":data.auth_user.url_image_user,
+                                            "user_name":data.auth_user.user_name,
+                                            "remember_me":data.auth_user.remember_me,
+                                            "user_role":data.auth_user.role,
+                                            "roles":data.auth_user.roles,
+                                            "email":data.auth_user.email
                                         }));
-                                        sessionStorage.setItem("loggedUser", JSON.stringify(data.data));
+                                        sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
                                         phanterpages.reload();
                                     } else if(data.status=="ERROR"){
                                         M.toast({html: data.message})
@@ -2151,9 +2248,7 @@ var PhanterPages = function(){
             if(("page" in currentpage)){
                 if(currentpage.page=="page_warning"){
                     if("parameters" in currentpage){
-                        console.error(currentpage.parameters)
                         if("message" in currentpage.parameters){
-                            console.error(currentpage.parameters.message)
                             $("#content-warning").html(currentpage.parameters.message)
                         }
                         if("title" in currentpage.parameters){
@@ -2171,10 +2266,10 @@ var PhanterPages = function(){
             success:function(data){
                 if(data.status=="OK"){
                     if (data.authenticated){
-                        $("#input-first_name").val(data.data.first_name)
-                        $("#input-last_name").val(data.data.last_name)
-                        $("#input-email").val(data.data.email)
-                        MainThis.getPhantergaleryProfileUser(data.data.url_image_user);
+                        $("#input-first_name").val(data.auth_user.first_name)
+                        $("#input-last_name").val(data.auth_user.last_name)
+                        $("#input-email").val(data.auth_user.email)
+                        MainThis.getPhantergaleryProfileUser(data.auth_user.url_image_user);
 
                         MainThis.getCsrfToInput(
                             "profile",
@@ -2203,14 +2298,14 @@ var PhanterPages = function(){
                                     success: function(data, textStatus){
                                         if(data.status=="OK"){
                                             sessionStorage.setItem("lastUser", JSON.stringify({
-                                                "url_image_user":data.data.url_image_user,
-                                                "user_name":data.data.user_name,
-                                                "remember_me":data.data.remember_me,
-                                                "user_role":data.data.role,
-                                                "roles":data.data.roles,
-                                                "email":data.data.email
+                                                "url_image_user":data.auth_user.url_image_user,
+                                                "user_name":data.auth_user.user_name,
+                                                "remember_me":data.auth_user.remember_me,
+                                                "user_role":data.auth_user.role,
+                                                "roles":data.auth_user.roles,
+                                                "email":data.auth_user.email
                                             }));
-                                            sessionStorage.setItem("loggedUser", JSON.stringify(data.data));
+                                            sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
                                             M.toast({html: "Perfil atualizado com sucesso!"})
                                             phanterpages.reload()
 
@@ -2270,18 +2365,18 @@ var PhanterPages = function(){
                     $("#options-top-main-bar-left").html(JSON.parse(component_user_nologin_menu));
                     if (data.authenticated){
                         sessionStorage.setItem("lockLastPage", sessionStorage.getItem("lastPage"))
-                        sessionStorage.setItem("lockUser", JSON.stringify(data.data))
-                        $("#form-lock-image-user-url").attr('src', data.data.url_image_user)
-                        $("#form-lock-profile-user-name").html(data.data.user_name)
-                        $("#form-lock-input-email").val(data.data.email)
-                        if(data.data.roles.indexOf("root")>-1){
+                        sessionStorage.setItem("lockUser", JSON.stringify(data.auth_user))
+                        $("#form-lock-image-user-url").attr('src', data.auth_user.url_image_user)
+                        $("#form-lock-profile-user-name").html(data.auth_user.user_name)
+                        $("#form-lock-input-email").val(data.auth_user.email)
+                        if(data.auth_user.roles.indexOf("root")>-1){
                             $("#form-lock-profile-user-role").text("Super Administrador")
-                        } else if(data.data.roles.indexOf("administrator")>-1){
+                        } else if(data.auth_user.roles.indexOf("administrator")>-1){
                             $("#form-lock-profile-user-role").text("Administrador")
                         } else {
                             $("#form-lock-profile-user-role").text("Usuário")
                         }
-                        if(data.data.remember_me==true){
+                        if(data.auth_user.remember_me==true){
                             $("#form-lock-input-remember_me").attr("checked", "checked");
                         }
                         sessionStorage.removeItem('token');
@@ -2345,14 +2440,14 @@ var PhanterPages = function(){
                                             sessionStorage.setItem("token", data.token)
                                             M.toast({html: "Desbloqueado!"});
                                             sessionStorage.setItem("lastUser", JSON.stringify({
-                                                "url_image_user":data.data.url_image_user,
-                                                "user_name":data.data.user_name,
-                                                "remember_me":data.data.remember_me,
-                                                "user_role":data.data.role,
-                                                "roles":data.data.roles,
-                                                "email":data.data.email
+                                                "url_image_user":data.auth_user.url_image_user,
+                                                "user_name":data.auth_user.user_name,
+                                                "remember_me":data.auth_user.remember_me,
+                                                "user_role":data.auth_user.role,
+                                                "roles":data.auth_user.roles,
+                                                "email":data.auth_user.email
                                             }));
-                                            sessionStorage.setItem("loggedUser", JSON.stringify(data.data));
+                                            sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
                                             phanterpages.reload();
 
 
@@ -2551,17 +2646,17 @@ var PhanterPages = function(){
             var component_user_login_menu = phanterwebCacheDataJS.components.component_user_login_menu
             $("#echo-user-cmp-login").html(JSON.parse(component_user_login));
             $("#options-top-main-bar-left").html(JSON.parse(component_user_login_menu));
-            $("#url_image_user").attr('src', data.data.url_image_user)
-            $("#materialize-component-left-menu-url-imagem-user").attr('src', data.data.url_image_user)
-            $("#form-login-image-user-url").attr('src', data.data.url_image_user)
-            $("#form-lock-image-user-url").attr('src', data.data.url_image_user)
-            $("#user_first_and_last_name_login").html(data.data.user_name)
-            $("#materialize-component-left-menu-name-user").text(data.data.user_name)
+            $("#url_image_user").attr('src', data.auth_user.url_image_user)
+            $("#materialize-component-left-menu-url-imagem-user").attr('src', data.auth_user.url_image_user)
+            $("#form-login-image-user-url").attr('src', data.auth_user.url_image_user)
+            $("#form-lock-image-user-url").attr('src', data.auth_user.url_image_user)
+            $("#user_first_and_last_name_login").html(data.auth_user.user_name)
+            $("#materialize-component-left-menu-name-user").text(data.auth_user.user_name)
             var calc_role = "Usuário"
-            if(data.data.roles.indexOf("administrator")>-1){
+            if(data.auth_user.roles.indexOf("administrator")>-1){
                 calc_role = "Administrador"
             };
-            if(data.data.roles.indexOf("root")>-1){
+            if(data.auth_user.roles.indexOf("root")>-1){
                 calc_role = "Super Administrador"
             };
             $("#user_role_login").text(calc_role)
@@ -2651,7 +2746,7 @@ var PhanterPages = function(){
         var user_info = sessionStorage.getItem("loggedUser");
         if(isNotEmpty(token) && isNotEmpty(user_info)){
             _print(user_info, "Dados do usuário")
-            MainThis.addCmdLogged({'data':JSON.parse(user_info)})
+            MainThis.addCmdLogged({'auth_user':JSON.parse(user_info)})
         } else {
             _print("Sem usuário")
             MainThis.addCmdUnlogged()
@@ -2662,9 +2757,9 @@ var PhanterPages = function(){
             _print(data, "getPage @data:")
             var roles = []
             if(isNotEmpty(data)){
-                if("data" in data){
-                    if(data.data!==null){
-                        roles = (typeof data.data.roles !== undefined) ? data.data.roles : [];
+                if("auth_user" in data){
+                    if(data.auth_user!==null){
+                        roles = (typeof data.auth_user.roles !== undefined) ? data.auth_user.roles : [];
                     } 
                 }
             }
@@ -2815,33 +2910,31 @@ var PhanterPages = function(){
                             success:function(data){
                                 if(data.status=="OK"){
                                     if("token" in data){
-                                        console.error("apareceu o token")
                                         sessionStorage.setItem("token", data.token)
-                                        $("#url_image_user").attr('src', data.data.url_image_user)
-                                        $("#materialize-component-left-menu-url-imagem-user").attr('src', data.data.url_image_user)
-                                        $("#form-login-image-user-url").attr('src', data.data.url_image_user)
-                                        $("#form-lock-image-user-url").attr('src', data.data.url_image_user)
-                                        $("#user_first_and_last_name_login").html(data.data.user_name)
-                                        $("#materialize-component-left-menu-name-user").text(data.data.user_name)
+                                        $("#url_image_user").attr('src', data.auth_user.url_image_user)
+                                        $("#materialize-component-left-menu-url-imagem-user").attr('src', data.auth_user.url_image_user)
+                                        $("#form-login-image-user-url").attr('src', data.auth_user.url_image_user)
+                                        $("#form-lock-image-user-url").attr('src', data.auth_user.url_image_user)
+                                        $("#user_first_and_last_name_login").html(data.auth_user.user_name)
+                                        $("#materialize-component-left-menu-name-user").text(data.auth_user.user_name)
                                         var calc_role = "Usuário"
-                                        if(data.data.roles.indexOf("administrator")>-1){
+                                        if(data.auth_user.roles.indexOf("administrator")>-1){
                                             calc_role = "Administrador"
                                         };
-                                        if(data.data.roles.indexOf("root")>-1){
+                                        if(data.auth_user.roles.indexOf("root")>-1){
                                             calc_role = "Super Administrador"
                                         };
                                         $("#user_role_login").text(calc_role)
                                         sessionStorage.setItem("lastUser", JSON.stringify({
-                                            "url_image_user":data.data.url_image_user,
-                                            "user_name":data.data.user_name,
-                                            "remember_me":data.data.remember_me,
-                                            "user_role":data.data.role,
-                                            "roles":data.data.roles,
-                                            "email":data.data.email
+                                            "url_image_user":data.auth_user.url_image_user,
+                                            "user_name":data.auth_user.user_name,
+                                            "remember_me":data.auth_user.remember_me,
+                                            "user_role":data.auth_user.role,
+                                            "roles":data.auth_user.roles,
+                                            "email":data.auth_user.email
                                         }));
-                                        sessionStorage.setItem("loggedUser", JSON.stringify(data.data));
+                                        sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
                                     }
-                                    console.error("nada de nada")
                                     if (data.authenticated){
                                         if(!data.activated){
                                             var form_activate = JSON.parse(phanterwebCacheDataJS.components.component_alert_top_activation)
@@ -2973,8 +3066,6 @@ var PhanterPages = function(){
                 $(".main-progress-bar").removeClass("enabled");
             }
         } else {
-            console.error("getDataPage: @pagina:", pagina)
-            console.error("página não localizada")
             MainThis.getDataPage("page_warning", {
                 'message':'Não foi possível carregar o recurso',
                 'title': 'Recurso Indisponível'

@@ -149,6 +149,58 @@ body.lock{
     line-height: 1.2rem;
     overflow-y: auto;
 }
+.phanterwebchip {
+    float: left;
+    background-color: #d4d4d4;
+    padding: 6px 21px 6px 31px;
+    border-radius: 28px;
+    margin: 5px;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14),0 3px 1px -2px rgba(0,0,0,0.12),0 1px 5px 0 rgba(0,0,0,0.2);
+    color: #4d4d4d;
+    cursor: pointer;
+    position: relative;
+}
+.phanterwebchip:hover {
+    color:white;
+    background-color: orange;
+}
+.phanterwebchip.enabled:hover {
+    color:white;
+    background-color: red;
+}
+.phanterwebchip.enabled {
+    padding: 6px 31px 6px 21px;
+    background-color: #c9e1a6;
+}
+.clear-phanterwebchip {
+    position: absolute;
+    top: 10px;
+    right: 11px;
+}
+.add-phanterwebchip {
+    position: absolute;
+    top: 10px;
+    left: 11px;
+}
+.materialize-input-chips-options {
+    display: table;
+    text-align: center;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e3dddd;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+.materialize-input-phanterwebformchips:focus:not([readonly]) {
+    border-bottom: 1px solid #26a69a;
+    -webkit-box-shadow: 0 1px 0 0 #26a69a;
+    box-shadow: 0 1px 0 0 #26a69a;
+}
+.materialize-input-phanterwebformchips.active{
+    display: table;
+    width: 100%;
+}
+
 .cmp-bar-user-name-role .cmp-bar-user-role {
 
     font-size: 0.7rem;
@@ -367,13 +419,18 @@ body.lock{
 }
 .materialize-input-text-xmlconstroi,
 .materialize-input-password-xmlconstroi,
-.materialize-input-checkbox-xmlconstroi
+.materialize-input-checkbox-xmlconstroi,
+.materialize-input-chips-xmlconstroi
  {
     position: relative;
     padding: 0 0.75rem;
     box-sizing: border-box;
     width: 100%;
     display: table;
+}
+.materialize-input-phanterwebformchips {
+    min-height: 45px;
+    border-bottom: 1px solid #9e9e9e;
 }
 .switch-input-select-container.actived-select .switch-input,
 .switch-input-select-container.actived-input .switch-select
@@ -1288,18 +1345,8 @@ body.lock{
     margin: 40px;
 
 }
-@media screen and (min-width: 800px){
-    .background-empresa {
-        background-repeat: repeat-y;
-        background-size: 100% auto;
-    }
-}
-@media screen and (min-width: 992px) {
-    #materialize-component-left-menu-user,
-    #fontawesome-component-left-menu-user {
-        display: none;
-    }
-}
+
+/*CELULAR S*/
 @media screen and (max-width: 600px) {
     body{
         padding-top: 56px;
@@ -1376,5 +1423,105 @@ body.lock{
         margin-right: auto;
         padding-bottom: 5px;
         float: none;
+    }
+}
+
+/*CELULAR XS - TABLET SM*/
+@media screen and (max-width: 600px) {
+    body{
+        padding-top: 56px;
+    }
+    #left-bar {
+        left: -50px;
+        top: 56px;
+    }
+    .main-and-left-bar{
+        padding-left: 0px;
+    }
+    #left-bar.expanded {
+        left: 0px;
+    }
+    .phanterweb-container{
+        width: 100%;
+        padding: 0px 5px;
+    }
+    .phanterweb-card-container{
+        padding: 5px;
+    }
+    .modal{
+        width: 90%;
+    }
+    .button-form{
+        width: 100%;
+    }
+    .main-container-login,
+    .main-container-register,
+    .main-container-request-password{
+        padding: 0 0 0 0;
+    }
+    .phanterweb-materialize-button-form-container{
+        width: 100%;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .phanterweb-materialize-button-form-container .btn{
+        width: 100%;
+    }
+    .phanterpages-card_buttons-container{
+        padding: 5px;
+    }
+    .titulo_maincontainer {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    .captcha-option-container {
+        display: inline-block;
+        padding: 5px;
+        float: none;
+    }
+    .captcha-container, .captcha-options-container {
+        width: auto;
+    }
+    .main-container-profile, .main-container-lock, .main-container-change-password {
+        background-color: white;
+        box-shadow: 0px 0px 5px;
+        border-radius: 3px;
+        padding: 0px;
+        margin: 0px;
+    }
+    .alerta-top-ajax-activation-action-input {
+        width: 100%;
+    }
+    .alerta-top-ajax-activation-action-activate, .alerta-top-ajax-activation-action-send {
+        padding-top: 0px;
+    }
+    .alerta-top-ajax-activation-phone-center{
+        width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-bottom: 5px;
+        float: none;
+    }
+}
+
+/*TABLET M - DESKTOP MS*/
+@media screen and (min-width: 600px) and (max-width: 800px){
+}
+
+/*TABLER XM - DESKTOP L*/
+@media screen and (min-width: 800px) and (max-width: 992px){
+    #materialize-component-left-menu-user,
+    #fontawesome-component-left-menu-user {
+        display: none;
+    }
+}
+
+/*DESKTOP XL*/
+@media screen and (min-width: 992px) {
+    #materialize-component-left-menu-user,
+    #fontawesome-component-left-menu-user {
+        display: none;
     }
 }
