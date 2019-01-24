@@ -183,13 +183,14 @@ body.lock{
     left: 11px;
 }
 .materialize-input-chips-options {
-    display: table;
     text-align: center;
     width: 100%;
     padding: 10px;
     border: 1px solid #e3dddd;
     border-radius: 5px;
     margin-bottom: 20px;
+    min-height: 65px;
+    overflow: hidden;
 }
 .materialize-input-phanterwebformchips:focus:not([readonly]) {
     border-bottom: 1px solid #26a69a;
@@ -199,6 +200,7 @@ body.lock{
 .materialize-input-phanterwebformchips.active{
     display: table;
     width: 100%;
+    outline: none;
 }
 
 .cmp-bar-user-name-role .cmp-bar-user-role {
@@ -427,6 +429,12 @@ body.lock{
     box-sizing: border-box;
     width: 100%;
     display: table;
+}
+.materialize-select-container-input-and-button {
+
+    position: relative;
+    padding-right: 63px;
+
 }
 .materialize-input-phanterwebformchips {
     min-height: 45px;
@@ -808,6 +816,30 @@ body.lock{
     .phanterwebformvalidator-input-check.actived-select.hasbutton {
         color:green;
         margin-right: 84px;
+    }
+    .phanterwebformvalidator-input-check.actived-input {
+        color:green;
+        margin-right: 84px;
+    }
+    .materilize-button-show-hidde-input-new.doinput {
+        position: absolute;
+    }
+    .materilize-button-show-hidde-input-new.doinput {
+        position: absolute;
+        top: 7px;
+        right: 0;
+    }
+    .input-field.switch-input {
+        padding-right: 65px;
+    }
+.switch-input-select-container.actived-select {
+    margin-bottom: 23px;
+}
+
+
+    .materialize-selectwithinput .select-wrapper + label {
+
+        top: -13px;
     }
     .phanterwebformvalidator-input-check {
         position: absolute;

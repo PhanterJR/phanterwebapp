@@ -57,10 +57,12 @@ function _print(texto, titulo, stack){
             }  
         } else {
             if (titulo){
-                console.info(titulo)
-            }  
+                console.info('%c '+titulo, 'background: #222; color: #bada55', texto)
+            } else {
+                console.log('%c '+texto, 'background: #222; color: #bada55')
+                
+            }
         }
-        console.log(texto)
     }
 }
 
@@ -131,7 +133,6 @@ var stringForceToFloatstring = function (value, force_dot=false, localeBR=true){
         return ""
     }
 };
-
 var justSearchedCaracter = function(value, caractere="."){
     var has_caractere = false;
     var value = new String(value)
@@ -148,7 +149,6 @@ var justSearchedCaracter = function(value, caractere="."){
     }
     return new_value
 };
-
 var stringToFloatstringLimitDecimals = function (value, casas_decimais=2, localeBR=true){
     var value = new String(value);
     if(isNotEmpty(value)){
@@ -184,7 +184,6 @@ var stringToFloatstringLimitDecimals = function (value, casas_decimais=2, locale
         return ""
     }
 };
-
 var floatToCurrency = function(value, casas_decimais=2, separador_decimal=",", separador_milhar=".", currency=""){
     var casas_decimais = casas_decimais;
     var separador_decimal = separador_decimal;
@@ -258,7 +257,6 @@ var floatToCurrency = function(value, casas_decimais=2, separador_decimal=",", s
         return p_m_inteiro+separador_decimal+p_m_decimal;
     }
 };
-
 function isEmail(email) {
     var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
     return regex.test(email);
@@ -323,6 +321,29 @@ function isACTIVATIONCODE(code){
     var regex = /^\d{5}/
     return regex.test(code)
 }
+function convertArraysourceinInt(lista){
+    var new_list = []
+    for (var i = 0; i < lista.length; i++) {
+        new_list.push(parseInt(lista[i]))
+    }
+    return new_list
+}
+function createStringArrayFromListObjData(listObjData){
+    _print(listObjData, "createStringArrayFromListObjData @listObjData")
+    var stringinput = "";
+    var cont = 0;
+    for (var i = 0; i < listObjData.length; i++) {
+        if(cont==0){
+            stringinput = new String(listObjData[i].id)
+        } else {
+            stringinput = stringinput + "|"+listObjData[i].id
+        }
+    }
+    cont++
+    _print(stringinput, "createStringArrayFromListObjData return:")
+    return stringinput
+}
+//phanterchips
 $.fn.phanterwebChips = function(listobjchips) {
     var MainThis = this;
     var Mainid = $(this).attr("id")
@@ -333,19 +354,24 @@ $.fn.phanterwebChips = function(listobjchips) {
     }
     var inputname = $(this).find("input").attr("name");
     
-    var val_input = []
-    if(isNotEmpty($(this).find("input").val())){
-        var val_input = JSON.parse($(this).find("input").val());
+    var val_input = [];
+    var valor_str_input = $(this).find("input").val();
+    _print(valor_str_input, "phanterwebChips valor do input")
+    if(isNotEmpty(valor_str_input)){
+        val_input = valor_str_input.split("|");
+        val_input = convertArraysourceinInt(val_input)
     } else{
         val_input = [];
     }
+    _print(val_input, "phanterwebChips valor do input em array")
     var new_val_input_just_ids = [];
     for (var i = 0; i < val_input.length; i++) {
-        var id_in = val_input[i].id
+        var id_in = val_input[i]
         if(list_ids_permits.indexOf(id_in)>-1){
             new_val_input_just_ids.push(id_in)
         }
     }
+     _print(new_val_input_just_ids, "phanterwebChips esta entre os permetidos")
     for(var i=0; i<MainThis.listobjchips.length; i++){
         var id_lis = MainThis.listobjchips[i].id
         if(new_val_input_just_ids.indexOf(id_lis)>-1){
@@ -357,9 +383,16 @@ $.fn.phanterwebChips = function(listobjchips) {
     this.init = function(listas){
         not_empty = false;
         var els_enableds = []
+        var stringinput = "";
+        var cont = 0;
         for(var i=0; i<listas.length; i++){
             var id_bj = "phanterwebchip-"+inputname+"-"+listas[i].id
             if(listas[i].enabled){
+                if(cont==0){
+                    stringinput = new String(listas[i].id)
+                } else {
+                    stringinput = stringinput + "|"+listas[i].id
+                }
                 not_empty=true;
                 els_enableds.push(listas[i])
                 var chip_obj = "<div id=\""+id_bj+"\" class=\"phanterwebchip phanterwebchip-"+inputname+" enabled waves-effect waves-light\" data-chip='"+JSON.stringify(listas[i])+"'>"+listas[i].destino+"<i class=\"tiny material-icons clear-phanterwebchip\">clear</i></div>"
@@ -407,8 +440,9 @@ $.fn.phanterwebChips = function(listobjchips) {
                     MainThis.init(new_list_obj)
                 });
             }
+            cont++
         };
-        $("input[name='"+inputname+"']").val(JSON.stringify(els_enableds));
+        $("input[name='"+inputname+"']").val(stringinput);
         if(not_empty){
             $("#"+Mainid).find("label").addClass("active")
             $("#materialize-input-phanterwebformchips_"+inputname)
@@ -868,9 +902,7 @@ $.fn.phanterMask = function(mask, parameters) {
     }
     return this
 };
-
 //phanterwebformvalidators
-
 function validate_data(form){
     var group = $(form).attr('phanterwebformvalidator_group')
     var hasErrorToButton = false;
@@ -1018,7 +1050,6 @@ function validate_data(form){
         }
     });
 };
-
 $.fn.phanterwebFormValidator = function(){
     MainObj = this
     var group = $(MainObj).attr('phanterwebformvalidator_group')
@@ -2686,7 +2717,7 @@ var PhanterPages = function(){
         } else {
             console.error("Ao chamar o método 'addCmdLogged' deve-se colocar o argumento data na qual estão as informações do usuário")
         }
-    }
+    };
     MainThis.addCmdUnlogged = function(){
         var component_user_nologin = phanterwebCacheDataJS.components.component_user_nologin
         var component_user_nologin_menu = phanterwebCacheDataJS.components.component_user_nologin_menu
@@ -2722,7 +2753,7 @@ var PhanterPages = function(){
             });
         links_href();
         ComponenteMenu.init();        
-    }
+    };
     MainThis.getDataPage = function(pagina, parameters){
         if(pagina=="page_lock"){
             $("body").addClass("lock");
@@ -2885,8 +2916,7 @@ var PhanterPages = function(){
 
                 }
             }
-        }
-
+        };
         if(isNotEmpty(phanterwebCacheDataJS.pages[pagina])){
             var page_obj = JSON.parse(phanterwebCacheDataJS.pages[pagina]);
 
@@ -3071,7 +3101,6 @@ var PhanterPages = function(){
                 'title': 'Recurso Indisponível'
             });
         }
-
     };
     MainThis.getDataPageToTarget = function(pagina, target, onsucess){
         $.ajax({url:pagina,
@@ -3223,7 +3252,7 @@ function links_href(){
             }
             $("#left-bar").removeClass("expanded");
         });
-}
+};
 
 // _prints
 _print({"currentPage":sessionStorage.getItem("currentPage"), "lastPage": sessionStorage.getItem("lastPage")});
@@ -3266,8 +3295,43 @@ var PHANTERWEB = function(parameters){
 
         ComponenteMenu.init()
     }
+    this.reload = function(){
+        M.AutoInit();
+        $(".materilize-button-show-hidde-input-new")
+            .off("click.materialize_select")
+            .on("click.materialize_select", function(){
+                var target = $(this).attr("target-switch");
+                var target_check = $(this).attr("target-check");
+                var el_target = $("#"+target);
+                var el_target_check = $("#"+target_check);
+                if(el_target.hasClass("actived-select")){
+                    el_target.removeClass("actived-select");
+                    el_target.addClass("actived-input");
+                    el_target_check.removeClass("actived-select");
+                    el_target_check.addClass("actived-input");
+                } else if(el_target.hasClass("actived-input")){
+                    el_target.removeClass("actived-input");
+                    el_target.addClass("actived-select");
+                    el_target_check.removeClass("actived-input");
+                    el_target_check.addClass("actived-select");
+                }
+                M.updateTextFields();
+            });
+        $(".phanterwebformselect-withhiddeninput").each(function(){
+            var id_input = $(this).attr("target_input")
+            $(this).on('change', function(){
+                var value = $(this).children("option:selected").val();
+                $("#"+id_input).val(value);
+            });
+        });
+        M.updateTextFields();
+        links_href();
+        ajustar_imagem();
+        links_href();
+        ComponenteMenu.init()     
+    }
     return this
-}()
+}();
 $(document).ready(function(){
     PHANTERWEB.init()
     //TouchEmulator();
@@ -3281,5 +3345,4 @@ $(document).ready(function(){
             ComponenteMenu.menuDecrease();
         });
     window.onbeforeunload = function() { return "Your work will be lost."; };
-
 });
