@@ -17,8 +17,7 @@ db = DAL('sqlite://storage.sqlite',
          migrate_enabled=True,
          check_reserved=['all'])
 
-db.define_table(
-    'auth_user',
+db.define_table('auth_user',
     Field('first_name', 'string', notnull=True),
     Field('last_name', 'string', notnull=True),
     Field('email', 'string', notnull=True, unique=True),
@@ -39,14 +38,11 @@ db.define_table(
     Field('rest_token', 'string', unique=True),
     Field('rest_date', 'datetime'),
     Field('rest_expire', 'integer'),
-    Field('activated', 'boolean', default=False, notnull=True),
-)
+    Field('activated', 'boolean', default=False, notnull=True))
 
-db.define_table(
-    'auth_group',
+db.define_table('auth_group',
     Field('role', 'string'),
-    Field('description', 'text')
-)
+    Field('description', 'text'))
 
 db.define_table(
     'auth_membership',
@@ -82,11 +78,20 @@ db.define_table(
     Field('request', 'text'),
     Field('date_operations', 'datetime', default=datetime.now())
 )
+
 if db(db.auth_group).isempty():
     db._adapter.reconnect()
     db.auth_group.insert(role="root", description="Administrator of application (Developer)")
     db.auth_group.insert(role="administrator", description="Super user of site")
     db.commit()
+
+if db(db.auth_membership).isempty():
+    if db.auth_user[1]:
+        id_role = db(db.auth_group.role == 'root').select().first()
+        if id_role:
+            db.auth_membership.insert(auth_user=1,
+            auth_group=id_role)
+            db.commit()
 
 
 class User(object):

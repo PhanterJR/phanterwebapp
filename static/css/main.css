@@ -10,7 +10,7 @@ body.lock{
     background-color:#424141
 }
 .background-empresa {
-    background-image: url('/static-versioned/0.1.0/images/store.jpg');
+    background-image: url('/static-versioned/0.1.1/images/store.jpg');
     width: 100%;
     min-height: 500px;
     background-repeat: no-repeat;
@@ -453,7 +453,7 @@ body.lock{
 .materialize-input-hidden-xmlconstroi{
     display: none;
 }
-.materialize-select-and-button-container {
+.materialize-select-and-button-container, .materialize-input-and-button-container {
     position: relative;
     padding-right: 63px;
 }
@@ -461,6 +461,11 @@ body.lock{
     position: absolute;
     top: 7px;
     right: 0;
+}
+.materialize-input-and-button-container-button {
+    position: absolute;
+    top: 24px;
+    right: 10px;
 }
 .materialize-searchbar-input-and-button {
     position: relative;
@@ -1369,17 +1374,29 @@ body.lock{
 }
 /*FIM captcha*/
 .main-container-profile, .main-container-lock, .main-container-change-password {
-
     background-color: white;
     box-shadow: 0px 0px 17px;
     border-radius: 8px;
     padding: 20px;
     margin: 40px;
+}
+#lista_auth_users {
 
+    overflow: auto;
+    border: 1px solid #dadada;
+    border-radius: 5px;
+
+}
+.phantertables-field {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /*CELULAR S*/
 @media screen and (max-width: 600px) {
+    .background-empresa {
+        background-position: center;
+    }
     body{
         padding-top: 56px;
     }
@@ -1460,6 +1477,9 @@ body.lock{
 
 /*CELULAR XS - TABLET SM*/
 @media screen and (max-width: 600px) {
+    .background-empresa {
+        background-position: center;
+    }
     body{
         padding-top: 56px;
     }
@@ -1540,6 +1560,9 @@ body.lock{
 
 /*TABLET M - DESKTOP MS*/
 @media screen and (min-width: 600px) and (max-width: 800px){
+    .background-empresa {
+        background-position: center;
+    }
 }
 
 /*TABLER XM - DESKTOP L*/
@@ -1548,6 +1571,11 @@ body.lock{
     #fontawesome-component-left-menu-user {
         display: none;
     }
+    .background-empresa {
+        background-image: url('/static-versioned/0.1.1/images/store.jpg');
+        background-repeat: repeat;
+        background-size: 100% auto;
+    }
 }
 
 /*DESKTOP XL*/
@@ -1555,5 +1583,10 @@ body.lock{
     #materialize-component-left-menu-user,
     #fontawesome-component-left-menu-user {
         display: none;
+    }
+    .background-empresa {
+        background-image: url('/static-versioned/0.1.1/images/store.jpg');
+        background-repeat: repeat;
+        background-size: 100% auto;
     }
 }

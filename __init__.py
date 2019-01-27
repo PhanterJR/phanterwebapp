@@ -9,7 +9,7 @@ from flask_restful import Api
 import os
 import configparser
 __author__ = "PhanterJR<junior.conex@gmail.com>"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __project_folder__ = os.path.dirname(os.path.abspath(__file__))
 __project__ = os.path.basename(__project_folder__)
 
@@ -33,7 +33,7 @@ app.config['DEFAULT_TIME_TOKEN_EXPIRES'] = int(config['APP']['app_default_time_t
 
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, "uploads")
 
-#controllers
+# controllers
 from .controllers import rest
 from .controllers import index
 from .controllers import static_versioned

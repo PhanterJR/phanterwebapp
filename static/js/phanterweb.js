@@ -395,7 +395,7 @@ $.fn.phanterwebChips = function(listobjchips) {
                 }
                 not_empty=true;
                 els_enableds.push(listas[i])
-                var chip_obj = "<div id=\""+id_bj+"\" class=\"phanterwebchip phanterwebchip-"+inputname+" enabled waves-effect waves-light\" data-chip='"+JSON.stringify(listas[i])+"'>"+listas[i].destino+"<i class=\"tiny material-icons clear-phanterwebchip\">clear</i></div>"
+                var chip_obj = "<div id=\""+id_bj+"\" class=\"phanterwebchip phanterwebchip-"+inputname+" enabled waves-effect waves-light\" data-chip='"+JSON.stringify(listas[i])+"'>"+listas[i].chipname+"<i class=\"tiny material-icons clear-phanterwebchip\">clear</i></div>"
                 $("#materialize-input-phanterwebformchips_"+inputname).append(chip_obj);
                 $("#"+id_bj).off('click.chips').on('click.chips', function(){
                     $("#"+id_bj).off('click.chips')
@@ -418,7 +418,7 @@ $.fn.phanterwebChips = function(listobjchips) {
                 });
             } else {
                 listas[i].enabled=false
-                var chip_obj = "<div id=\""+id_bj+"\" class=\"phanterwebchip phanterwebchip-"+inputname+" waves-effect waves-light\" data-chip='"+JSON.stringify(listas[i])+"'><i class=\"tiny material-icons add-phanterwebchip\">add</i>"+listas[i].destino+"</div>"
+                var chip_obj = "<div id=\""+id_bj+"\" class=\"phanterwebchip phanterwebchip-"+inputname+" waves-effect waves-light\" data-chip='"+JSON.stringify(listas[i])+"'><i class=\"tiny material-icons add-phanterwebchip\">add</i>"+listas[i].chipname+"</div>"
                 $("#materialize-input-chips-options-"+inputname).append(chip_obj);
                 $("#"+id_bj).off('click.chips').on('click.chips', function(){
                     $("#"+id_bj).off('click.chips')
@@ -1070,7 +1070,6 @@ $.fn.phanterwebFormValidator = function(){
         });
     return this
 };
-
 //check application
 function check_application(){
     var local_application_info = sessionStorage.getItem("application")
@@ -1089,7 +1088,7 @@ function check_application(){
         sessionStorage.setItem("application", JSON.stringify(phanterwebCacheDataJS.application))
         location.reload()
     }
-}
+};
 check_application();
 //phanterquery
 var phanterQuery = function(seletor){
@@ -1210,7 +1209,6 @@ var phanterQuery = function(seletor){
     }
     return obj_result
 };
-
 //phantersvg
 var phanterSvgs = new (function() {
     this.icons={
@@ -1251,7 +1249,6 @@ var phanterSvgs = new (function() {
     }
     this.update()
 })();
-
 //phantergallery
 var phanterGalleryObj = function(elementPhanterGalleryObj, config, messages){
     var MainObj = this
@@ -1374,7 +1371,6 @@ var phanterGalleryObj = function(elementPhanterGalleryObj, config, messages){
     };
     return MainObj
 };
-
 var phanterGalleryCutterObj = function(base64data, PG){
     var selfObj = this
     var PG=PG
@@ -1659,7 +1655,6 @@ var phanterGalleryCutterObj = function(base64data, PG){
     });
     return selfObj
 };
-
 var phanterGallery = new (function(){
     this.phanterGalleryObjs=[]
     this._config = {
@@ -1757,7 +1752,6 @@ var phanterGallery = new (function(){
     this.update(true)
     return this
 })();
-
 var phanterGalleryAjaxObj = function(url, objectToSend, callback){
     var xhttp;
     xhttp = new XMLHttpRequest();
@@ -1780,12 +1774,11 @@ var phanterGalleryAjaxObj = function(url, objectToSend, callback){
     xhttp.open("POST", url, true);
     xhttp.send(fd,  imageBlob);
 };
-
 function ajustar_imagem(){
     var altura = $(window).height()-128;
     _print(altura, "Altura:");
     $(".background-empresa").css('height', altura)
-}
+};
 
 $(window).on('resize', function(){ajustar_imagem()})
 
@@ -1863,8 +1856,105 @@ var ComponenteMenu = new function(){
         this.actionBtnMenuCmdSubMenu()
     }
 }();
+var PhanterTables = function(table_name, data){
+    var MainThis = this;
+    MainThis.map_search_bar = JSON.parse(phanterwebCacheDataJS.maps.map_search_bar)
+    MainThis.map_search_bar = MainThis.map_search_bar.split("§table_name§").join(table_name)
+    console.error(MainThis.map_search_bar)
+    MainThis.table_name = table_name;
+    MainThis.fields = data.fields;
+    MainThis.t_html = $('<table id="'+table_name+'" class="phantertables"></table>')
+    MainThis.html = ""
+    MainThis.data = data
+    MainThis.menu = '<td class="phantertables-field phantertables-field-menu-td">\
+            <span class="dropdown-trigger link phantertables-menu-button" data-target="dropdown_'+table_name+'_§id_name§">\
+                <i class="material-icons">more_vert</i>\
+            </span>\
+            <ul id="dropdown_'+table_name+'_§id_name§" class="dropdown-content phantertables-menu-container">§menu_itens§</ul>\
+        </td>'
+    MainThis.menu_li = '<li><span id="phantertables-menu-item_'+table_name+'_§id_name§_§id_submenu_name§" class="phantertables-menu-item" data-source="phantertables-row-'+table_name+'-§id_name§">§label§</span></li>'
+    MainThis.menuButtons = null;
+    MainThis.fieldsSearch = null;
+    MainThis._setList = function() {
+        var lista = MainThis.data[table_name]
+        console.error(lista)
+        var cont = 0;    
+        for (var i = 0; i < lista.length; i++) {
+            var row = lista[i];
+            console.error(row)
+            if (cont == 0) {
+                MainThis._setField();
+            };
+            cont++;
+            var html_r = $('<tr id="phantertables-row-'+MainThis.table_name+'-'+lista[i].id+'" class="phantertables-row data-auth_user=\''+JSON.stringify(lista[i])+'\'"></tr>')
+            for (var x in MainThis.fields) {
+                var html_f = $('<td id="phantertables-field-'+x+'-'+lista[i].id+'" class="phantertables-field">'+lista[i][x]+'</td>')
+                $(html_r).append(html_f);
+            }
+            if (MainThis.menuButtons!==null) {
+                var local_menuButtonscontainer = MainThis.menu.split("§id_name§").join(lista[i].id)
+                var text_menu = MainThis.menu_li.split("§id_name§").join(lista[i].id)
+                var texts_menus = ""
+                for (var v = 0; v < MainThis.menuButtons.length; v++) {
+                    MainThis.menuButtons[v]
+                    temp_menu = text_menu.split("§id_submenu_name§").join(MainThis.menuButtons[v][0])
+                    temp_menu = temp_menu.split("§label§").join(MainThis.menuButtons[v][1])
+                    texts_menus+=temp_menu
+                }
+                local_menuButtonscontainer = local_menuButtonscontainer.split("§menu_itens§").join(texts_menus)
+                $(html_r).append($(local_menuButtonscontainer));
+            };
+            $(MainThis.t_html).append(html_r)
+        };
+    };
+    MainThis._setField = function(){
+        var html_r = $('<tr id="phantertables-row-head-'+MainThis.table_name+'" class="phantertables-row-head phantertables-row"></tr>')
+        for (var x in MainThis.fields) {
+            var html_f = $('<th id="phantertables-field-'+x+'" class="phantertables-field">'+MainThis.fields[x]+'</th>')
+            $(html_r).append(html_f);
+        }
+        if (MainThis.menuButtons!==null) {
+            $(html_r).append($('<th class="label_icon"></th>'));
+        };
+        $(MainThis.t_html).append(html_r)
+    }
+    MainThis.addMenu = function(id_submenu_name, label){
+        if (MainThis.menuButtons===null) {
+            MainThis.menuButtons = []
+        }
+        MainThis.menuButtons.push([id_submenu_name, label])
+    };
+    MainThis.init = function(lista){
+        MainThis._setList();
 
-
+        MainThis.map_search_bar = $(MainThis.map_search_bar)
+        MainThis.map_search_bar.find("#phantertable-table-container-"+table_name).html(MainThis.t_html)
+        MainThis.html = MainThis.map_search_bar
+        if (MainThis.fieldsSearch===null){
+            cont=0
+            for (var x in MainThis.fields) {
+                var el_option = new Option(x, MainThis.fields[x]);
+                if(cont == 0){
+                    $(el_option).attr("selected", "selected")
+                };
+                MainThis.map_search_bar.find("#materialize-select-search-"+table_name).append(el_option);
+                cont++
+            }
+            
+        } else {
+            cont=0
+            for (var x in MainThis.fieldsSearch) {
+                var el_option= new Option(x, MainThis.fieldsSearch[x]);
+                if(cont == 0){
+                    $(el_option).attr("selected", "selected")
+                };
+                MainThis.map_search_bar.find("#materialize-select-search-"+table_name).append(el_option);
+                cont++
+            }  
+        }
+        return $(MainThis.html)
+    }
+};
 var PhanterPages = function(){
     var MainThis = this
     MainThis.id_user = "";
@@ -1908,7 +1998,7 @@ var PhanterPages = function(){
         MainThis.getDataPage("page_main");
     }
     MainThis.reload = function(){
-         _print("Reload Acionado")
+        _print("Reload Acionado")
         var current = sessionStorage.getItem("currentPage")
         if(isNotEmpty(current)){
             current = JSON.parse(current)
@@ -1953,12 +2043,9 @@ var PhanterPages = function(){
             'csrf_token':$("#form-login-input-csrf_token").val()
         }
         
-        $.ajax({url:remoteHostAddress+"/api/authenticater",
-                type: "POST",
-                crossOrigin: true,
-                data:data_form,
-                success: function(data, textStatus){
-                    $(".progressbar-form-modal").removeClass("enabled");
+        MainThis.POST({url:"/api/authenticater",
+                data: data_form,
+                success: function(data){
                     if(data.status=="OK"){
                         $("#modal_layout").modal("close");
                         sessionStorage.removeItem('lockUser');
@@ -1986,17 +2073,12 @@ var PhanterPages = function(){
                         MainThis.getCaptcha("login")
                     }
                 },
-                headers:{
-                    'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                    'Authorization': sessionStorage.getItem("token")
-                    },
                 error: function(data){
                     M.toast({html: "Erro na conexão"})
                     $(".progressbar-form-modal").removeClass("enabled");
                     $(".main-progress-bar").removeClass("enabled");
                     _print(data, "login: "+remoteHostAddress+"/api/user/login");
                 },
-                dataType:"json",
             });
     };
     MainThis.openModalLogin = function(){
@@ -2128,12 +2210,9 @@ var PhanterPages = function(){
                             $(".phanterwebformvalidator-input-error").each(function(){
                                 $(this).slideUp();
                             });
-                            $(".progressbar-form-modal").addClass("enabled");
-                            $.ajax({url:remoteHostAddress+"/api/users",
-                                type: "POST",
-                                crossOrigin: true,
+                            MainThis.POST({url:"/api/users",
                                 data: $("#form-register").serialize(),
-                                success: function(data, textStatus){
+                                success: function(data){
                                     if(data.status=="OK"){
                                         M.toast({html: "Registro efetuado com sucesso"});
                                         modal_layout.modal("close");
@@ -2153,12 +2232,7 @@ var PhanterPages = function(){
                                         MainThis.responseValidator(data)
                                         MainThis.getCaptcha("register")
                                     }
-                                    $(".progressbar-form-modal").removeClass("enabled");
                                 },
-                                headers:{
-                                    'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                                    'Authorization': sessionStorage.getItem("token")
-                                    },
                                 error: function(data){
                                     M.toast({html: "Erro na conexão"})
                                     MainThis.getCaptcha("register")
@@ -2166,7 +2240,6 @@ var PhanterPages = function(){
                                     $(".main-progress-bar").removeClass("enabled");
                                     _print(data, "openModalRegister: "+remoteHostAddress+"/api/user/register")
                                 },
-                                dataType:"json"
                             });
                         });
                     var cont=0
@@ -2225,12 +2298,12 @@ var PhanterPages = function(){
                             $(".phanterwebformvalidator-input-error").each(function(){
                                 $(this).slideUp();
                             });
-                            $.ajax({url:remoteHostAddress+"/api/user/request-password",
+                            MainThis.POST({url:"/api/user/request-password",
                                 type: "POST",
                                 crossOrigin: true,
                                 data: {'email-request-password': $("#input-email-request-password").val(),
                                 'csrf_token': $("#input-csrf_token").val()},
-                                success: function(data, textStatus){
+                                success: function(data){
                                     if(data.status=="OK"){
                                         $("#modal_layout").modal("close");
                                         M.toast({html: "Solicitação de nova senha enviada"});
@@ -2285,13 +2358,15 @@ var PhanterPages = function(){
                         if("title" in currentpage.parameters){
                             $("#titulo-warning").html(currentpage.parameters.title)
                         }
+                        if("pagina" in currentpage.parameters){
+                            sessionStorage.setItem("currentPage", currentpage.parameters.pagina)
+                        }
                     }
                 }
             }
         }
-    }
+    };
     MainThis.profile = function(){
-        
         MainThis.getRemoteJson({
             url:"/api/users",
             success:function(data){
@@ -2317,16 +2392,13 @@ var PhanterPages = function(){
                                     $(this).slideUp();
                                 });
                                 $(".main-progress-bar").addClass("enabled");
-                                var formData = new FormData($("form.form-profile")[0]);
+                                var formData = new FormData($("#form-profile")[0]);
                                 //formData.set("phantergallery_upload-input-file-profile", phanterGallery.phanterGalleryObjs[0].getCuttedImage())
-                                $.ajax({url:remoteHostAddress+"/api/users",
-                                    type: "PUT",
-                                    crossOrigin: true,
+                                MainThis.PUT({url:"/api/users",
                                     data: formData,
-                                    cache: false,
-                                    contentType: false,
                                     processData: false,
-                                    success: function(data, textStatus){
+                                    contentType: false,
+                                    success: function(data){
                                         if(data.status=="OK"){
                                             sessionStorage.setItem("lastUser", JSON.stringify({
                                                 "url_image_user":data.auth_user.url_image_user,
@@ -2355,10 +2427,6 @@ var PhanterPages = function(){
                                         }
                                         $(".main-progress-bar").removeClass("enabled");
                                     },
-                                    headers:{
-                                        'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                                        'Authorization': sessionStorage.getItem("token")
-                                        },
                                     error: function(data){
                                         M.toast({html: "Erro na conexão"})
                                         $(".progressbar-form-modal").removeClass("enabled");
@@ -2366,8 +2434,6 @@ var PhanterPages = function(){
                                         _print(data, "profile: "+remoteHostAddress+"/api/user/profile")
                                     },
                                 });
-
-
                             });
                         /*MainThis.actionBtnChangePassword();*/
                     } else {
@@ -2458,11 +2524,9 @@ var PhanterPages = function(){
                                 'remember_me':remember_me,
                                 'csrf_token':$("#form-lock-input-csrf").val()
                             }
-                            $.ajax({url:remoteHostAddress+"/api/authenticater",
-                                    type: "POST",
-                                    crossOrigin: true,
+                            MainThis.POST({url:"/api/authenticater",
                                     data:data_form,
-                                    success: function(data, textStatus){
+                                    success: function(data){
                                         if(data.status=="OK"){
                                             $(".main-progress-bar").removeClass("enabled");
                                             sessionStorage.setItem("currentPage",sessionStorage.getItem("lockLastPage"))
@@ -2489,17 +2553,12 @@ var PhanterPages = function(){
                                             MainThis.getCsrfToInput("lock", "#form-lock-input-csrf")
                                         }
                                     },
-                                    headers:{
-                                        'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                                        'Authorization': sessionStorage.getItem("token")
-                                        },
                                     error: function(data){
                                         M.toast({html: "Erro na conexão"})
                                         $(".progressbar-form-modal").removeClass("enabled");
                                         $(".main-progress-bar").removeClass("enabled");
                                         _print(data, "lock: "+remoteHostAddress+'/api/user/login')
                                     },
-                                    dataType:"json",
                                 });
                         });
                 } else {
@@ -2535,11 +2594,9 @@ var PhanterPages = function(){
             .off('click.change-password-ajax-button-submit')
             .on('click.change-password-ajax-button-submit', function(){
                 $(".progressbar-form-modal").addClass("enabled");
-                $.ajax({url:remoteHostAddress+"/api/user/change-password",
-                    type: "POST",
-                    crossOrigin: true,
+                MainThis.POST({url:"/api/user/change-password",
                     data: $(".form-change-password").serialize(),
-                    success: function(data, textStatus){
+                    success: function(data){
                         if(data.status=="OK"){
                             M.toast({html: "Senha alterada com sucesso!"})
                             phanterpages.getDataPage("page_profile")
@@ -2549,36 +2606,40 @@ var PhanterPages = function(){
                                 $("#input-csrf_token").val(data.csrf)
                             }
                         }
-                        $(".progressbar-form-modal").removeClass("enabled");
                     },
-                    headers:{
-                        'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                        'Authorization': sessionStorage.getItem("token")
-                        },
                     error: function(data){
                         M.toast({html: "Erro na conexão"})
-                        $(".progressbar-form-modal").removeClass("enabled");
-                        $(".main-progress-bar").removeClass("enabled");
-                        _print(data, "changePassword: "+remoteHostAddress+"/api/user/change-password")
+                        _print(data, "ERROR: changePassword: "+remoteHostAddress+"/api/user/change-password")
                     },
-                    dataType:"json"
                 });
             })
     };
     MainThis.admin = function(){
        
-    }
+    };
+    MainThis.admin_users = function(){
+        MainThis.getRemoteJson({url:"/api/admin/users",
+            success: function(data){
+                var tableusers = new PhanterTables("auth_users", data)
+                tableusers.addMenu("editar", "Editar")
+                var html = tableusers.init()
+                $("#lista_auth_users").html(html)
+            },
+            error: function(data){
+
+            }
+
+        })
+    };
     MainThis.getCsrfCaptcha = function(cmd_option, token_captcha, group){
             var html = JSON.parse(phanterwebCacheDataJS.components.component_preloader_circle_big)
             $("#captcha-"+group+"-container").html(html)
-            $.ajax({url:remoteHostAddress+"/api/captcha",
-                type: "POST",
-                crossOrigin: true,
+            MainThis.POST({url:"/api/captcha",
                 data: {"cmd_option":cmd_option,
                        "token_captcha":token_captcha,
                        "group":group
                     },
-                success: function(data, textStatus){
+                success: function(data){
                     if(data.status=="OK"){
                         var csrf_token = data.csrf;
                         $("input[name='csrf_token']").val(csrf_token);
@@ -2591,17 +2652,12 @@ var PhanterPages = function(){
                         $(".progressbar-form-modal").removeClass("enabled");
                     }
                 },
-                headers:{
-                    'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                    'Authorization': sessionStorage.getItem("token")
-                    },
                 error: function(data){
                     M.toast({html: "Erro na conexão"})
                     $(".progressbar-form-modal").removeClass("enabled");
                     $(".main-progress-bar").removeClass("enabled");
                     _print(data, "getCsrfCaptcha: "+remoteHostAddress+"/api/captcha")
                 },
-                dataType:"json"
             });
     };
     MainThis.getCaptcha = function(group){
@@ -2609,7 +2665,7 @@ var PhanterPages = function(){
             type: "GET",
             crossOrigin: true,
             data: {"group":group},
-            success: function(data, textStatus){
+            success: function(data){
                 if(data.status=="OK"){
                     $("#captcha-"+group+"-container").html(data.html)
                     $(".captcha-option")
@@ -2647,20 +2703,55 @@ var PhanterPages = function(){
         $.ajax({url:url,
             type: "GET",
             crossOrigin: true,
-            success: function(data, textStatus){
+            success: function(data){
                 _print(data, remoteHostAddress+obj_param.url);
                 $(".progressbar-form-modal").removeClass("enabled");
                 $(".main-progress-bar").removeClass("enabled");
-                if ("success" in obj_param){
-                    obj_param.success(data);
-                }
+                if (data.status == "OK"){
+                    if (("token" in data)&&("retoken" in data)) {
+                        sessionStorage.setItem("token", data.token)
+                        $("#url_image_user").attr('src', data.auth_user.url_image_user)
+                        $("#materialize-component-left-menu-url-imagem-user").attr('src', data.auth_user.url_image_user)
+                        $("#form-login-image-user-url").attr('src', data.auth_user.url_image_user)
+                        $("#form-lock-image-user-url").attr('src', data.auth_user.url_image_user)
+                        $("#user_first_and_last_name_login").html(data.auth_user.user_name)
+                        $("#materialize-component-left-menu-name-user").text(data.auth_user.user_name)
+                        var calc_role = "Usuário"
+                        if(data.auth_user.roles.indexOf("administrator")>-1){
+                            calc_role = "Administrador"
+                        };
+                        if(data.auth_user.roles.indexOf("root")>-1){
+                            calc_role = "Super Administrador"
+                        };
+                        $("#user_role_login").text(calc_role)
+                        sessionStorage.setItem("lastUser", JSON.stringify({
+                            "url_image_user":data.auth_user.url_image_user,
+                            "user_name":data.auth_user.user_name,
+                            "remember_me":data.auth_user.remember_me,
+                            "user_role":data.auth_user.role,
+                            "roles":data.auth_user.roles,
+                            "email":data.auth_user.email
+                        }));
+                        sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
+                        MainThis.getRemoteJson(obj_param)
+                    } else {
+                        if ("success" in obj_param){
+                            obj_param.success(data);
+                        }
+                        PHANTERWEB.reload();
+                    }
+                } else {
+                    if ("success" in obj_param){
+                        obj_param.success(data);
+                    }
+                    PHANTERWEB.reload();
+                };
             },
             headers:{
                     'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
                     'Authorization':sessionStorage.getItem('token')
             },
             error: function(data){
-                M.toast({html: "Erro na conexão"})
                 $(".progressbar-form-modal").removeClass("enabled");
                 $(".main-progress-bar").removeClass("enabled");
                 _print(data, "getRemoteJson: "+remoteHostAddress+obj_param.url);
@@ -2670,6 +2761,160 @@ var PhanterPages = function(){
             },
             dataType:"json",
         });
+    };
+    MainThis.PUT = function(parameters){
+        var obj_param = parameters
+        var new_parameters = {};
+        new_parameters.crossOrigin = true;
+        new_parameters.cache = false;
+        new_parameters.dataType = "json"
+        new_parameters.data = obj_param.data
+        new_parameters.url = remoteHostAddress+obj_param.url;
+        new_parameters.type = "PUT";
+        new_parameters.headers = {'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
+            'Authorization': sessionStorage.getItem("token")}
+        new_parameters.success = function(data){
+                _print(data, remoteHostAddress+obj_param.url);
+                $(".progressbar-form-modal").removeClass("enabled");
+                $(".main-progress-bar").removeClass("enabled");
+                if (data.status == "OK"){
+                    if ("success" in obj_param){
+                        obj_param.success(data);
+                    }
+                } else if (data.status == "ERROR"){
+                    if (("token" in data)&&("retoken" in data)) {
+                        sessionStorage.setItem("token", data.token)
+                        $("#url_image_user").attr('src', data.auth_user.url_image_user)
+                        $("#materialize-component-left-menu-url-imagem-user").attr('src', data.auth_user.url_image_user)
+                        $("#form-login-image-user-url").attr('src', data.auth_user.url_image_user)
+                        $("#form-lock-image-user-url").attr('src', data.auth_user.url_image_user)
+                        $("#user_first_and_last_name_login").html(data.auth_user.user_name)
+                        $("#materialize-component-left-menu-name-user").text(data.auth_user.user_name)
+                        var calc_role = "Usuário"
+                        if(data.auth_user.roles.indexOf("administrator")>-1){
+                            calc_role = "Administrador"
+                        };
+                        if(data.auth_user.roles.indexOf("root")>-1){
+                            calc_role = "Super Administrador"
+                        };
+                        $("#user_role_login").text(calc_role)
+                        sessionStorage.setItem("lastUser", JSON.stringify({
+                            "url_image_user":data.auth_user.url_image_user,
+                            "user_name":data.auth_user.user_name,
+                            "remember_me":data.auth_user.remember_me,
+                            "user_role":data.auth_user.role,
+                            "roles":data.auth_user.roles,
+                            "email":data.auth_user.email
+                        }));
+                        sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
+                        MainThis.POST(obj_param)
+                    } else {
+                        if ("success" in obj_param){
+                            obj_param.success(data);
+                        }
+                    }
+                } else {
+                    if ("success" in obj_param){
+                        obj_param.success(data);
+                    }
+                };
+            }
+        new_parameters.error = function(data){
+                M.toast({html: "Erro na conexão"})
+                $(".progressbar-form-modal").removeClass("enabled");
+                $(".main-progress-bar").removeClass("enabled");
+                _print(data, "POST: "+remoteHostAddress+obj_param.url);
+                if ("error" in obj_param){
+                    obj_param.error(data);
+                }
+            }
+        $(".progressbar-form-modal").addClass("enabled");
+        $(".main-progress-bar").addClass("enabled");
+        if ("processData" in parameters){
+            new_parameters.processData = parameters.processData;
+        }
+        if ("contentType" in parameters){
+            new_parameters.contentType = parameters.contentType;
+        }
+
+        $.ajax(new_parameters);
+    };
+    MainThis.POST = function(parameters){
+        var obj_param = parameters
+        var new_parameters = {};
+        new_parameters.crossOrigin = true;
+        new_parameters.cache = false;
+        new_parameters.dataType = "json"
+        new_parameters.data = obj_param.data
+        new_parameters.url = remoteHostAddress+obj_param.url;
+        new_parameters.type = "POST";
+        new_parameters.headers = {'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
+                    'Authorization': sessionStorage.getItem("token")}
+        new_parameters.success = function(data){
+                _print(data, remoteHostAddress+obj_param.url);
+                $(".progressbar-form-modal").removeClass("enabled");
+                $(".main-progress-bar").removeClass("enabled");
+                if (data.status == "OK"){
+                    if ("success" in obj_param){
+                        obj_param.success(data);
+                    }
+                } else if (data.status == "ERROR"){
+                    if (("token" in data)&&("retoken" in data)) {
+                        sessionStorage.setItem("token", data.token)
+                        $("#url_image_user").attr('src', data.auth_user.url_image_user)
+                        $("#materialize-component-left-menu-url-imagem-user").attr('src', data.auth_user.url_image_user)
+                        $("#form-login-image-user-url").attr('src', data.auth_user.url_image_user)
+                        $("#form-lock-image-user-url").attr('src', data.auth_user.url_image_user)
+                        $("#user_first_and_last_name_login").html(data.auth_user.user_name)
+                        $("#materialize-component-left-menu-name-user").text(data.auth_user.user_name)
+                        var calc_role = "Usuário"
+                        if(data.auth_user.roles.indexOf("administrator")>-1){
+                            calc_role = "Administrador"
+                        };
+                        if(data.auth_user.roles.indexOf("root")>-1){
+                            calc_role = "Super Administrador"
+                        };
+                        $("#user_role_login").text(calc_role)
+                        sessionStorage.setItem("lastUser", JSON.stringify({
+                            "url_image_user":data.auth_user.url_image_user,
+                            "user_name":data.auth_user.user_name,
+                            "remember_me":data.auth_user.remember_me,
+                            "user_role":data.auth_user.role,
+                            "roles":data.auth_user.roles,
+                            "email":data.auth_user.email
+                        }));
+                        sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
+                        MainThis.POST(obj_param)
+                    } else {
+                        if ("success" in obj_param){
+                            obj_param.success(data);
+                        }
+                    }
+                } else {
+                    if ("success" in obj_param){
+                        obj_param.success(data);
+                    }
+                };
+            }
+        new_parameters.error = function(data){
+                M.toast({html: "Erro na conexão"})
+                $(".progressbar-form-modal").removeClass("enabled");
+                $(".main-progress-bar").removeClass("enabled");
+                _print(data, "POST: "+remoteHostAddress+obj_param.url);
+                if ("error" in obj_param){
+                    obj_param.error(data);
+                }
+            }
+        $(".progressbar-form-modal").addClass("enabled");
+        $(".main-progress-bar").addClass("enabled");
+        if ("processData" in parameters){
+            new_parameters.processData = parameters.processData;
+        }
+        if ("contentType" in parameters){
+            new_parameters.contentType = parameters.contentType;
+        }
+
+        $.ajax(new_parameters);
     };
     MainThis.addCmdLogged = function(data){
         if(isNotEmpty(data)){
@@ -2762,8 +3007,9 @@ var PhanterPages = function(){
         }
         _print(pagina, "getDataPage: @pagina")
         _print(parameters, "getDataPage: @parameters")
-        var temp_parameters = MainThis.getPamameters(pagina);
-        var currentpage = JSON.parse(sessionStorage.getItem("currentPage"));
+        var temp_parameters = sessionStorage.getItem("currentPage");
+
+        var currentpage = JSON.parse(temp_parameters);
 
         if (isNotEmpty(parameters)){
             MainThis.setCurrentPage(pagina, parameters)
@@ -2800,14 +3046,13 @@ var PhanterPages = function(){
                 html = page_obj.page
             } else{
                 console.error("Não há um key page no page_obj")
-                /*$(".progressbar-form-modal").removeClass("enabled");
-                $(".main-progress-bar").removeClass("enabled");*/
                 MainThis.getDataPage("page_warning", {
                     'message':'Não foi possível carregar o recurso',
-                    'title': 'Recurso Indisponível'
+                    'title': 'Recurso Indisponível',
+                    'pagina': temp_parameters,
                 });
             }
-            if(("can_access" in  page_obj)){
+            if(("can_access" in page_obj)){
                 has_authorization = false
                 for (var i = 0; i < page_obj.can_access.length; i++) {
                     if(roles.indexOf(page_obj.can_access[i])>-1){
@@ -2823,11 +3068,11 @@ var PhanterPages = function(){
                 } else {
                     _print("Não tem autorização, então vai um warning")
                     _print(page_obj, "Será que tem parâmetros")
-                    //var page_warning = JSON.parse(phanterwebCacheDataJS.pages.page_warning)
-                    //("#main-container").html(page_warning);
+                    temp_parameters = sessionStorage.getItem("currentPage");
                     MainThis.getDataPage("page_warning", {
                         'message':'Não tem autorização para acessar este recurso',
-                        'title': 'Recurso Indisponível'
+                        'title': 'Recurso Indisponível',
+                        'pagina': sessionStorage.getItem("currentPage"),
                     });
                 }
             } else {
@@ -2881,7 +3126,6 @@ var PhanterPages = function(){
                                 $("#"+botoes_fixos[i]).removeClass("enabled")
                             }
                         }
-                        
                     } else {
                         $(".phanterwebbuttonpack").each(function(){
                             $(this).removeClass("enabled")
@@ -2919,7 +3163,6 @@ var PhanterPages = function(){
         };
         if(isNotEmpty(phanterwebCacheDataJS.pages[pagina])){
             var page_obj = JSON.parse(phanterwebCacheDataJS.pages[pagina]);
-
             if(page_obj && (typeof(page_obj)==='object')){
                 if(isNotEmpty(parameters)){
                     page_obj.parameters=parameters
@@ -2939,32 +3182,6 @@ var PhanterPages = function(){
                             url:"/api/users",
                             success:function(data){
                                 if(data.status=="OK"){
-                                    if("token" in data){
-                                        sessionStorage.setItem("token", data.token)
-                                        $("#url_image_user").attr('src', data.auth_user.url_image_user)
-                                        $("#materialize-component-left-menu-url-imagem-user").attr('src', data.auth_user.url_image_user)
-                                        $("#form-login-image-user-url").attr('src', data.auth_user.url_image_user)
-                                        $("#form-lock-image-user-url").attr('src', data.auth_user.url_image_user)
-                                        $("#user_first_and_last_name_login").html(data.auth_user.user_name)
-                                        $("#materialize-component-left-menu-name-user").text(data.auth_user.user_name)
-                                        var calc_role = "Usuário"
-                                        if(data.auth_user.roles.indexOf("administrator")>-1){
-                                            calc_role = "Administrador"
-                                        };
-                                        if(data.auth_user.roles.indexOf("root")>-1){
-                                            calc_role = "Super Administrador"
-                                        };
-                                        $("#user_role_login").text(calc_role)
-                                        sessionStorage.setItem("lastUser", JSON.stringify({
-                                            "url_image_user":data.auth_user.url_image_user,
-                                            "user_name":data.auth_user.user_name,
-                                            "remember_me":data.auth_user.remember_me,
-                                            "user_role":data.auth_user.role,
-                                            "roles":data.auth_user.roles,
-                                            "email":data.auth_user.email
-                                        }));
-                                        sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
-                                    }
                                     if (data.authenticated){
                                         if(!data.activated){
                                             var form_activate = JSON.parse(phanterwebCacheDataJS.components.component_alert_top_activation)
@@ -2981,11 +3198,9 @@ var PhanterPages = function(){
                                                     $(".main-progress-bar").addClass("enabled");
                                                     var code = $("#input-code_activation").val();
                                                     if(isACTIVATIONCODE(code)){                                
-                                                        $.ajax({url:remoteHostAddress+"/api/user/active-code",
-                                                            type: "POST",
-                                                            crossOrigin: true,
+                                                        MainThis.POST({url:"/api/user/active-code",
                                                             data: {"code":code},
-                                                            success: function(data, textStatus){
+                                                            success: function(data){
                                                                 if(data.status=="OK"){
                                                                     $("#alert-top").slideUp();
                                                                     M.toast({html: "Conta ativada com sucesso!"});
@@ -3002,11 +3217,6 @@ var PhanterPages = function(){
                                                                 $(".main-progress-bar").removeClass("enabled");
                                                                 _print(data, "getDataPage: "+remoteHostAddress+"/api/user/active-code")
                                                             },
-                                                            headers:{
-                                                                'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                                                                'Authorization': sessionStorage.getItem("token")
-                                                                },
-                                                            dataType:"json"
                                                         });
                                                     } else {
                                                         M.toast({html: "Código Inválido"})
@@ -3016,11 +3226,10 @@ var PhanterPages = function(){
                                                 .off('click.new_code')
                                                 .on('click.new_code', function(){
                                                     $(".main-progress-bar").addClass("enabled");
-                               
                                                     $.ajax({url:remoteHostAddress+"/api/user/active-code",
                                                         type: "GET",
                                                         crossOrigin: true,
-                                                        success: function(data, textStatus){
+                                                        success: function(data){
                                                             if(data.status=="OK"){
                                                                 M.toast({html: "Solicitação Enviada!"});
                                                             } else if(data.status=="ERROR"){
@@ -3048,13 +3257,12 @@ var PhanterPages = function(){
                                         $("#alert-top").slideUp(function(){
                                             $(this).removeClass("enabled");
                                         });
-
                                         var has_token = sessionStorage.getItem("token");
                                         if(isNotEmpty(has_token)){
                                             M.toast({html: "Token expirado!"})
                                             sessionStorage.removeItem("loggedUser")
                                             sessionStorage.removeItem("token")
-                                            MainThis.principal();
+                                            //MainThis.principal();
                                         }
                                     };
                                     getPage(page_obj, data)
@@ -3063,13 +3271,12 @@ var PhanterPages = function(){
                                         $("#alert-top").slideUp(function(){
                                             $(this).removeClass("enabled");
                                         });
-
                                         var has_token = sessionStorage.getItem("token");
                                         if(isNotEmpty(has_token)){
                                             M.toast({html: "Token expirado!"})
                                             sessionStorage.removeItem("loggedUser")
                                             sessionStorage.removeItem("token")
-                                            MainThis.principal();
+                                            //MainThis.principal();
                                         }
                                     }
                                     getPage(page_obj, data)
@@ -3098,7 +3305,8 @@ var PhanterPages = function(){
         } else {
             MainThis.getDataPage("page_warning", {
                 'message':'Não foi possível carregar o recurso',
-                'title': 'Recurso Indisponível'
+                'title': 'Recurso Indisponível',
+                'pagina': temp_parameters,
             });
         }
     };
@@ -3106,7 +3314,7 @@ var PhanterPages = function(){
         $.ajax({url:pagina,
             type: "GET",
             crossOrigin: true,
-            success: function(data, textStatus){
+            success: function(data){
                 MainThis.currentPage = pagina;
                 $(target).html(data);
                 onsucess();
@@ -3128,7 +3336,7 @@ var PhanterPages = function(){
             crossOrigin: true,
             cache: false,
             data: {},
-            success: function(data, textStatus){
+            success: function(data){
                 if(data.status=="OK"){
                     $(inputalvo).val(data.csrf);
                 }

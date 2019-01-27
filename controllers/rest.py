@@ -7,7 +7,7 @@ from .. import (
 )
 
 from inspect import currentframe, getframeinfo
-from ..models import User, CSRF, ErrorLog
+from ..models import User, CSRF, ErrorLog, db
 from ..models.phantergallery import UserImage
 from phanterweb.validators import ValidateReqArgs
 from phanterweb.phantergallery import PhanterGalleryCutter
@@ -25,13 +25,12 @@ import os
 parser = reqparse.RequestParser()
 time = app.config['DEFAULT_TIME_TOKEN_EXPIRES']
 
+
 def requires_login(
     authorized_roles=None,
     check_csrf=False,
     intention_csrf=None,
-    defid="requires_login",
-    permit_retoken=False
-    ):
+    defid="requires_login"):
     def real_decorator(f):
         @wraps(f)
         def f_intern(*args, **kargs):
@@ -138,87 +137,87 @@ def requires_login(
                         'message': 'Usuário não localizado'
                     }
             else:
-                if permit_retoken:
-                    usuario = User(token=token)
-                    if usuario:
-                        ultima_data = usuario.rest_date
-                        periodo = datetime.now() - ultima_data
-                        app.logger.debug(periodo.seconds)
-                        if (periodo.seconds > 0) and (periodo.seconds < app.config['DEFAULT_TIME_TOKEN_EXPIRES']):
-                            app.logger.debug("veio aqui")
-                            new_token = usuario.token
-                            usuario = User(token=new_token)
-                            if usuario.activated:
-                                activated = True
-                            else:
-                                activated = False
-                            user_image = UserImage(usuario.id).image
-                            email = Markup.escape(usuario.email)
-                            is_to_remember = True if usuario.remember_me else False
-                            user_roles = ["user"]
-                            if usuario.roles:
-                                user_roles = usuario.roles
-                                if "user" not in user_roles:
-                                    user_roles.append("user")
-                            if user_image:
-                                reader = Serialize(
-                                    app.config['SECRET_KEY_USERS'],
-                                    int(timedelta(365).total_seconds())
-                                )
-                                autorization = reader.dumps(
-                                    {'token': new_token.decode('utf-8')}
-                                )
-                                url_image_user = api.url_for(
-                                    RestImageUser,
-                                    id_image=user_image.id,
-                                    autorization=autorization,
-                                    _external=True
-                                )
-                            else:
-                                url_image_user = url_for('static', filename="images/user.png")
-                            first_name = Markup.escape(usuario.first_name)
-                            last_name = Markup.escape(usuario.last_name)
-                            user_name = "%s %s" % (first_name, last_name)
-                            if usuario.roles:
-                                if "administrator" in usuario.roles:
-                                    user_role = "Administrador"
-                                if "root" in usuario.roles:
-                                    user_role = "Super Administrador"
-                            return {
-                                'status': 'OK',
-                                'authenticated': True,
-                                'token': new_token.decode('utf-8'),
-                                'auth_user': {
-                                    'id': usuario.id,
-                                    'user_name': user_name,
-                                    'first_name': first_name,
-                                    'last_name': last_name,
-                                    'url_image_user': url_image_user,
-                                    'remember_me': is_to_remember,
-                                    'role': user_role,
-                                    'roles': user_roles,
-                                    'email': email,
-                                },
-                                'activated': activated
-                            }
+                usuario = User(token=token)
+                if usuario:
+                    ultima_data = usuario.rest_date
+                    periodo = datetime.now() - ultima_data
+                    app.logger.debug(periodo.seconds)
+                    if (periodo.seconds > 0) and (periodo.seconds < app.config['DEFAULT_TIME_TOKEN_EXPIRES']):
+                        app.logger.debug("veio aqui")
+                        new_token = usuario.token
+                        usuario = User(token=new_token)
+                        if usuario.activated:
+                            activated = True
                         else:
-                            frameinfo = getframeinfo(currentframe())
-                            authorization_error.error(
-                                "".join([
-                                    "file: %s" % frameinfo.filename,
-                                    "\nline: %s" % frameinfo.lineno,
-                                    "\ndef: %s" % defid,
-                                    "\nmessage: O token %s" % token,
-                                    " é inválido mesmo depois de um retoken."
-                                ])
+                            activated = False
+                        user_image = UserImage(usuario.id).image
+                        email = Markup.escape(usuario.email)
+                        is_to_remember = True if usuario.remember_me else False
+                        user_roles = ["user"]
+                        if usuario.roles:
+                            user_roles = usuario.roles
+                            if "user" not in user_roles:
+                                user_roles.append("user")
+                        if user_image:
+                            reader = Serialize(
+                                app.config['SECRET_KEY_USERS'],
+                                int(timedelta(365).total_seconds())
                             )
-                            return {
-                                'status': 'ERROR',
-                                'authenticated': False,
-                                'auth_user': None,
-                                'roles': ['Anônimo'],
-                                'message': 'Token inválido ou expirado, faça login novamente!'
-                            }
+                            autorization = reader.dumps(
+                                {'token': new_token.decode('utf-8')}
+                            )
+                            url_image_user = api.url_for(
+                                RestImageUser,
+                                id_image=user_image.id,
+                                autorization=autorization,
+                                _external=True
+                            )
+                        else:
+                            url_image_user = url_for('static', filename="images/user.png")
+                        first_name = Markup.escape(usuario.first_name)
+                        last_name = Markup.escape(usuario.last_name)
+                        user_name = "%s %s" % (first_name, last_name)
+                        if usuario.roles:
+                            if "administrator" in usuario.roles:
+                                user_role = "Administrador"
+                            if "root" in usuario.roles:
+                                user_role = "Super Administrador"
+                        return {
+                            'status': 'OK',
+                            'authenticated': True,
+                            'retoken': True,
+                            'token': new_token.decode('utf-8'),
+                            'auth_user': {
+                                'id': usuario.id,
+                                'user_name': user_name,
+                                'first_name': first_name,
+                                'last_name': last_name,
+                                'url_image_user': url_image_user,
+                                'remember_me': is_to_remember,
+                                'role': user_role,
+                                'roles': user_roles,
+                                'email': email,
+                            },
+                            'activated': activated
+                        }
+                    else:
+                        frameinfo = getframeinfo(currentframe())
+                        authorization_error.error(
+                            "".join([
+                                "file: %s" % frameinfo.filename,
+                                "\nline: %s" % frameinfo.lineno,
+                                "\ndef: %s" % defid,
+                                "\nmessage: O token %s" % token,
+                                " é inválido mesmo depois de um retoken."
+                            ])
+                        )
+                        return {
+                            'status': 'ERROR',
+                            'authenticated': False,
+                            'auth_user': None,
+                            'roles': ['Anônimo'],
+                            'message': 'Token inválido ou expirado, faça login novamente!'
+                        }
 
                 frameinfo = getframeinfo(currentframe())
                 authorization_error.error(
@@ -237,14 +236,13 @@ def requires_login(
                     'roles': ['Anônimo'],
                     'message': 'Token inválido ou expirado, faça login novamente!'
                 }
-
         return f_intern
     return real_decorator
 
+
 def requires_csrf(
     intention_csrf=None,
-    defid="requires_csrf"
-    ):
+    defid="requires_csrf"):
     def real_decorator(f):
         @wraps(f)
         def f_intern(*args, **kargs):
@@ -302,18 +300,14 @@ def requires_csrf(
     return real_decorator
 
 
-class HelloWorld(Resource):
+class RestApi(Resource):
     """
         url: /api
     """
-    def get(self):
-        parser.add_argument('old_password')
-        parser.add_argument('password')
-        parser.add_argument('password_repeat')
-        parser.add_argument('csrf_token')
-        args = parser.parse_args()
 
-        return {'hello': str(dict(args))}
+    def get(self):
+        return {'status': 'OK',
+            'message': 'Hello World'}
 
 
 class RestCSRF(Resource):
@@ -603,65 +597,64 @@ class RestImageUser(Resource):
 
 class RestUsers(Resource):
 
-    @requires_login(permit_retoken=True)
+    @requires_login()
     def get(self, *args, **kargs):
-        if ('usuario' in kargs) and ('token' in kargs):
-            usuario = kargs['usuario']
-            token = kargs['token']
-            if usuario:
-                user_name = Markup.escape("%s %s" % (usuario.first_name, usuario.last_name))
-                if usuario.activated:
-                    activated = True
-                else:
-                    activated = False
-                user_image = UserImage(usuario.id).image
-                email = Markup.escape(usuario.email)
-                is_to_remember = True if usuario.remember_me else False
-                user_roles = ["user"]
-                if usuario.roles:
-                    user_roles = usuario.roles
-                    if "user" not in user_roles:
-                        user_roles.append("user")
-                if user_image:
-                    reader = Serialize(
-                        app.config['SECRET_KEY_USERS'],
-                        int(timedelta(365).total_seconds())
-                    )
-                    autorization = reader.dumps(
-                        {'token': token}
-                    )
-                    url_image_user = api.url_for(
-                        RestImageUser,
-                        id_image=user_image.id,
-                        autorization=autorization,
-                        _external=True
-                    )
-                else:
-                    url_image_user = url_for('static', filename="images/user.png")
-                first_name = Markup.escape(usuario.first_name)
-                last_name = Markup.escape(usuario.last_name)
-                user_role = "Usuário"
-                if usuario.roles:
-                    if "administrator" in usuario.roles:
-                        user_role = "Administrador"
-                    if "root" in usuario.roles:
-                        user_role = "Super Administrador"
-                return {
-                    'status': 'OK',
-                    'authenticated': True,
-                    'auth_user': {
-                        'id': usuario.id,
-                        'user_name': user_name,
-                        'first_name': first_name,
-                        'last_name': last_name,
-                        'url_image_user': url_image_user,
-                        'remember_me': is_to_remember,
-                        'role': user_role,
-                        'roles': user_roles,
-                        'email': email,
-                    },
-                    'activated': activated
-                }
+        usuario = kargs['usuario']
+        token = kargs['token']
+        if usuario:
+            user_name = Markup.escape("%s %s" % (usuario.first_name, usuario.last_name))
+            if usuario.activated:
+                activated = True
+            else:
+                activated = False
+            user_image = UserImage(usuario.id).image
+            email = Markup.escape(usuario.email)
+            is_to_remember = True if usuario.remember_me else False
+            user_roles = ["user"]
+            if usuario.roles:
+                user_roles = usuario.roles
+                if "user" not in user_roles:
+                    user_roles.append("user")
+            if user_image:
+                reader = Serialize(
+                    app.config['SECRET_KEY_USERS'],
+                    int(timedelta(365).total_seconds())
+                )
+                autorization = reader.dumps(
+                    {'token': token}
+                )
+                url_image_user = api.url_for(
+                    RestImageUser,
+                    id_image=user_image.id,
+                    autorization=autorization,
+                    _external=True
+                )
+            else:
+                url_image_user = url_for('static', filename="images/user.png")
+            first_name = Markup.escape(usuario.first_name)
+            last_name = Markup.escape(usuario.last_name)
+            user_role = "Usuário"
+            if usuario.roles:
+                if "administrator" in usuario.roles:
+                    user_role = "Administrador"
+                if "root" in usuario.roles:
+                    user_role = "Super Administrador"
+            return {
+                'status': 'OK',
+                'authenticated': True,
+                'auth_user': {
+                    'id': usuario.id,
+                    'user_name': user_name,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'url_image_user': url_image_user,
+                    'remember_me': is_to_remember,
+                    'role': user_role,
+                    'roles': user_roles,
+                    'email': email,
+                },
+                'activated': activated
+            }
 
     @requires_csrf(intention_csrf="register", defid="RestUsers.post")
     def post(self, *args, **kargs):
@@ -795,8 +788,8 @@ class RestUsers(Resource):
                         'csrf': csrf_token,
                         'message': 'O novo email digitado já existe!',
                         'validators': {
-                            'first_name': valid_first_name.error if valid_first_name.has_error else "OK",
-                            'last_name': valid_last_name.error if valid_last_name.has_error else "OK",
+                            'first_name': "OK",
+                            'last_name': "OK",
                             'email': "O email já existe",
                         }
                     }
@@ -908,6 +901,44 @@ class RestUsers(Resource):
                     'csrf': csrf_token,
                     "message": "Nada foi alterado!"
                 }
+
+
+class RestAdminUsers(Resource):
+    @requires_login(authorized_roles=['root'], defid="RestAdminUsers.get")
+    def get(self, *args, **kargs):
+        db._adapter.reconnect()
+        q_users = db(db.auth_user.id > 0).select()
+        t_users = db(db.auth_user.id > 0).count()
+        fields = {x: db.auth_user[x].label for x in db.auth_user.fields}
+        return {
+            'status': 'OK',
+            'fields': fields,
+            'table_length': t_users,
+            'auth_users': [{
+                'id': x.id,
+                'first_name': x.first_name,
+                'last_name': x.last_name,
+                'email': x.email,
+                'remember_me': x.remember_me,
+                'password_hash': x.password_hash,
+                'attempts_to_login': x.attempts_to_login,
+                'datetime_next_attempt_to_login': str(x.datetime_next_attempt_to_login),
+                'temporary_password': x.temporary_password,
+                'temporary_password_hash': x.temporary_password_hash,
+                'temporary_password_expire': str(x.temporary_password_expire),
+                'activate_hash': x.activate_hash,
+                'activate_code': x.activate_code,
+                'attempts_to_activate': x.attempts_to_activate,
+                'activate_date_expire': str(x.activate_date_expire),
+                'retrieve_hash': x.retrieve_hash,
+                'permit_double_login': x.permit_double_login,
+                'rest_key': x.rest_key,
+                'rest_token': x.rest_token,
+                'rest_date': str(x.rest_date),
+                'rest_expire': x.rest_expire,
+                'activated': x.activated,
+            } for x in q_users]
+        }
 
 
 class RestServerInfo(Resource):
@@ -1137,7 +1168,7 @@ class RestAuthenticater(Resource):
                 return {'status': 'ERROR', 'message': 'Erro inesperado!'}
 
 
-api.add_resource(HelloWorld, '/api')
+api.add_resource(RestApi, '/api')
 api.add_resource(RestImageUser, '/api/user/image/<int:id_image>/<autorization>')
 api.add_resource(RestActive, '/api/user/active-code')
 api.add_resource(RestRequestPassword, '/api/user/request-password')
@@ -1147,3 +1178,4 @@ api.add_resource(RestCaptcha, '/api/captcha')
 api.add_resource(RestUsers, '/api/users')
 api.add_resource(RestServerInfo, '/api/server')
 api.add_resource(RestAuthenticater, '/api/authenticater')
+api.add_resource(RestAdminUsers, '/api/admin/users')

@@ -16,7 +16,7 @@ botoes = [
             "local_library",
             _class="material-icons large administracao_card_material-icons"
         ),
-        "auth_user",
+        "page_admin_auth_users",
         "Adicionar/Editar clientes"
     ),
     (
