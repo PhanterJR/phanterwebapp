@@ -370,6 +370,7 @@ def process_checkbox(value):
     else:
         return False
 
+
 def process_intenger(value):
     try:
         value = int(value)
@@ -720,6 +721,7 @@ class RestImageUser(Resource):
                 "user.png"
             )
 
+
 class RestUsers(Resource):
 
     @requires_login()
@@ -1018,6 +1020,29 @@ class RestAdminGroups(Resource):
             } for x in q_groups]
         }
 
+    @requires_login(
+        authorized_roles=['root'],
+        check_csrf=True,
+        intention_csrf="groups",
+        defid="RestAdminGroups.put")
+    def put(self, *args, **kargs):
+        id_auth_group = kargs["id_auth_group"]
+        csrf_token = kargs['new_csrf_token']
+        parser.add_argument('role')
+        parser.add_argument('description')
+        args = parser.parse_args()
+        role = args['role']
+        description = args['description']
+        validate = ValidateReqArgs(args)
+        validate.isNotEmpty("role", "O nome não pode ser vazio.")
+        if True:
+            return {
+                'status': 'ERROR',
+                'message': 'Erros nos dados enviados!',
+                'csrf': csrf_token,
+                'validators': validate.validators
+            }
+
 
 class RestAdminImageUser(Resource):
     def get(self, autorization):
@@ -1109,7 +1134,6 @@ class RestAdminUsers(Resource):
         parser.add_argument('phantergallery-input-name-newSizeY-auth_user')
         parser.add_argument('chips-groups-auth_user')
         args = parser.parse_args()
-        app.logger.debug(args)
         first_name = args['first_name']
         last_name = args['last_name']
         email = args['email']
@@ -1140,8 +1164,6 @@ class RestAdminUsers(Resource):
         validate.match('attempts_to_activate', "Intenger", r"^[0-9]{0,2}$", "O valor tem que ser um inteiro")
         validate.match('attempts_to_login', "Intenger1", r"^[0-9]{0,2}$", "O valor tem que ser um inteiro")
         validate.isInSet('chips-groups-auth_user', list_groups, "Não é um grupo válido")
-        import json
-        app.logger.debug(json.dumps(validate.process(), indent=2))
         if validate.anyError:
             return {
                 'status': 'ERROR',
@@ -1444,4 +1466,4 @@ api.add_resource(RestServerInfo, '/api/server')
 api.add_resource(RestAuthenticater, '/api/authenticater')
 api.add_resource(RestAdminImageUser, '/api/auth_user/image/<autorization>')
 api.add_resource(RestAdminUsers, '/api/admin/users', '/api/admin/users/<id_auth_user>')
-api.add_resource(RestAdminGroups, '/api/admin/groups')
+api.add_resource(RestAdminGroups, '/api/admin/groups', '/api/admin/users/<id_auth_user>')

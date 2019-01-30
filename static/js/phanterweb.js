@@ -1892,7 +1892,7 @@ var PhanterTables = function(table_name, data){
                 MainThis._setField();
             };
             cont++;
-            var html_r = $('<tr id="phantertables-row-'+MainThis.table_name+'-'+lista[i].id+'" class="phantertables-row" data-auth_user=\''+JSON.stringify(lista[i])+'\'"></tr>')
+            var html_r = $('<tr id="phantertables-row-'+MainThis.table_name+'-'+lista[i].id+'" class="phantertables-row" data-'+MainThis.table_name+'=\''+JSON.stringify(lista[i])+'\'"></tr>')
             for (var x in MainThis.fields) {
                 var html_f = $('<td id="phantertables-field-'+x+'-'+lista[i].id+'" class="phantertables-field">'+lista[i][x]+'</td>')
                 $(html_r).append(html_f);
@@ -2730,12 +2730,23 @@ var PhanterPages = function(){
                 auth_group.addMenu("editar", "Editar")
                 var html = auth_group.init()
                 $("#lista_auth_group").html(html)
+                $(".phantertables-menu-item_editar").each(function(){
+                    var source = $(this).attr("data-source")
+                    var data_user = JSON.parse($("#"+source).attr("data-auth_user"))
+                    data_user = JSON.stringify({'edit': data_user})
+                    console.error("#"+source)
+                    $(this).attr('link_href', 'page_admin_auth_user_form')
+                    $(this).attr('link_href_parameters', data_user)
+                })
             },
             error: function(data){
 
             }
 
         })
+    };
+    MainThis.admin_auth_group_form = function(){
+
     };
     MainThis.getCsrfCaptcha = function(cmd_option, token_captcha, group){
             var html = JSON.parse(phanterwebCacheDataJS.components.component_preloader_circle_big)

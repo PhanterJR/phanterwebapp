@@ -10,10 +10,8 @@ from phanterweb.helpers import (
 
 from phanterweb.materialize import (
     MaterializeInputText,
-    MaterializePreloaderCircle,
     MaterializeInputHidden,
-    MaterializeButtonForm,
-    MaterializeInputCheckBox
+    MaterializeButtonForm
 )
 
 html = CONCATENATE(
@@ -23,73 +21,64 @@ html = CONCATENATE(
             DIV(
                 DIV(
                     FORM(
-
-
-                            MaterializeInputHidden(
-                                "csrf_token",
-                                "csrf token",
-                                id_input="form-profile-input-csrf_token",
+                        MaterializeInputHidden(
+                            "csrf_token",
+                            "csrf token",
+                            default="",
+                            error="",
+                            _phanterwebformvalidator_isnotempty="",
+                            _phanterwebformvalidator_group="groups",
+                        ),
+                        DIV(
+                            MaterializeInputText(
+                                "role",
+                                "Papel",
                                 default="",
                                 error="",
                                 _phanterwebformvalidator_isnotempty="",
-                                _phanterwebformvalidator_group="profile",
+                                _phanterwebformvalidator_group="groups",
+                                _class="col s12 m6"
                             ),
-                            DIV(
-                                MaterializeInputText(
-                                    "role",
-                                    "Papel",
-                                    default="",
-                                    error="",
-                                    _phanterwebformvalidator_isnotempty="",
-                                    _phanterwebformvalidator_group="profile",
-                                    _class="col s12 m6"
-                                ),
-                                MaterializeInputText(
-                                    "description",
-                                    "Descrição",
-                                    default="",
-                                    error="",
-                                    _phanterwebformvalidator_isnotempty="",
-                                    _phanterwebformvalidator_group="profile",
-                                    _class="col s12 m6"
-                                ),
-                                _class="row reset-css-row"
+                            MaterializeInputText(
+                                "description",
+                                "Descrição",
+                                default="",
+                                error="",
+                                _phanterwebformvalidator_isnotempty="",
+                                _phanterwebformvalidator_group="groups",
+                                _class="col s12 m6"
                             ),
-
-
-
-
+                            _class="row reset-css-row"
+                        ),
+                        DIV(
                             DIV(
                                 DIV(
-                                    DIV(
-                                        DIV(_class="phantergallery_progressbar-movement"),
-                                        _class="phantergallery_progressbar"),
-                                    _class="progressbar-form-modal"),
-                                _class="progressbar-container-form-modal"),
+                                    DIV(_class="phantergallery_progressbar-movement"),
+                                    _class="phantergallery_progressbar"),
+                                _class="progressbar-form-modal"),
+                            _class="progressbar-container-form-modal"),
+                        DIV(
                             DIV(
-                                DIV(
-                                    MaterializeButtonForm(
-                                        "profile-ajax-button-save",
-                                        "Salvar Mudanças",
-                                        _class="waves-effect waves-teal",
-                                        _phanterwebformvalidator_submit="",
-                                        _phanterwebformvalidator_group="profile"
-                                    ),
-                                    _class='buttons-form-container'
+                                MaterializeButtonForm(
+                                    "groups-ajax-button-save",
+                                    "Salvar Mudanças",
+                                    _class="waves-effect waves-teal",
+                                    _phanterwebformvalidator_submit="",
+                                    _phanterwebformvalidator_group="groups"
                                 ),
-                                _class="input-field col s12"
+                                _class='buttons-form-container'
                             ),
-
-
+                            _class="input-field col s12"
+                        ),
                         _action="#",
-                        _id="form-profile",
-                        _class="form-profile row",
+                        _id="form-groups",
+                        _class="form-groups row",
                         _enctype="multipart/form-data",
                         _method="post",
-                        _phanterwebformvalidator_group="profile",
+                        _phanterwebformvalidator_group="groups",
                         _autocomplete="off"
                     ),
-                    _class='profile-container phanterweb-card-container'
+                    _class='groups-container phanterweb-card-container'
                 ),
                 _class="card"
             ),
