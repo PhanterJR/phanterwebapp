@@ -2747,6 +2747,24 @@ var PhanterPages = function(){
         })
     };
     MainThis.admin_auth_group_form = function(){
+        var parameters = MainThis.getPamameters();
+        if("edit" in parameters){
+
+            var auth_group = parameters.edit
+            for (var x in auth_group){
+                var id_input = "#input-"+x
+                var type_input = $(id_input).attr("type")
+                if(type_input == "text"){
+                    $(id_input).val(auth_group[x])
+                } else if (type_input == "checkbox"){
+                    if(auth_group[x]){
+                        $(id_input).attr('checked', 'checked')
+                    }  
+                }
+            }
+            $("#input-role").val(auth_group.role)
+            $("#input-description").val(auth_group.description)
+        };
 
     };
     MainThis.getCsrfCaptcha = function(cmd_option, token_captcha, group){

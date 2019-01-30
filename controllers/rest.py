@@ -1023,7 +1023,7 @@ class RestAdminGroups(Resource):
     @requires_login(
         authorized_roles=['root'],
         check_csrf=True,
-        intention_csrf="groups",
+        intention_csrf="auth_group",
         defid="RestAdminGroups.put")
     def put(self, *args, **kargs):
         id_auth_group = kargs["id_auth_group"]
