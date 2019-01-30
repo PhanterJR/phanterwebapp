@@ -2732,12 +2732,13 @@ var PhanterPages = function(){
                 $("#lista_auth_group").html(html)
                 $(".phantertables-menu-item_editar").each(function(){
                     var source = $(this).attr("data-source")
-                    var data_user = JSON.parse($("#"+source).attr("data-auth_user"))
+                    var data_user = JSON.parse($("#"+source).attr("data-auth_group"))
                     data_user = JSON.stringify({'edit': data_user})
                     console.error("#"+source)
-                    $(this).attr('link_href', 'page_admin_auth_user_form')
+                    $(this).attr('link_href', 'page_admin_auth_group_form')
                     $(this).attr('link_href_parameters', data_user)
                 })
+                PHANTERWEB.reload()
             },
             error: function(data){
 
@@ -3653,7 +3654,9 @@ var PHANTERWEB = function(parameters){
                 $("#"+id_input).val(value);
             });
         });
-        phanterGallery
+        $('select').formSelect();
+        $('.dropdown-trigger').dropdown();
+
         M.updateTextFields();
         links_href();
         ajustar_imagem();
