@@ -338,8 +338,8 @@ function createStringArrayFromListObjData(listObjData){
         } else {
             stringinput = stringinput + "|"+listObjData[i].id
         }
+        cont++
     }
-    cont++
     _print(stringinput, "createStringArrayFromListObjData return:")
     return stringinput
 }
@@ -921,6 +921,7 @@ function validate_data(form){
         var hasattr_isequals = main_element.attr("phanterwebformvalidator_isequals")
         var hasattr_isnotequals = main_element.attr("phanterwebformvalidator_isnotequals")
         var hasattr_valueisdifferentof = main_element.attr("phanterwebformvalidator_valueisdifferentof")
+        var hasattr_canisequals = main_element.attr("phanterwebformvalidator_canisequals")
         if (typeof hasattr_isnotempty !== typeof undefined && hasattr_isnotempty !== false){
             can_empty = false;
             var value = element.val();
@@ -1037,8 +1038,16 @@ function validate_data(form){
                 hasErrorToButton=true;
             }
         }
+        if (typeof hasattr_canisequals !== typeof undefined && hasattr_canisequals !== false){
+            var value = element.val();
+            var val_notequals = main_element.attr("phanterwebformvalidator_canisequals")
+            
+            if (value==val_notequals){                             
+                hasError=false;
+                hasErrorToButton=false;
+            }
+        }
         if (hasError){
-           
             main_element.find("#phanterwebformvalidator-input-check-"+inputname).addClass('disable');
         } else{
             main_element.find("#phanterwebformvalidator-input-check-"+inputname).removeClass('disable');
@@ -1860,7 +1869,6 @@ var PhanterTables = function(table_name, data){
     var MainThis = this;
     MainThis.map_search_bar = JSON.parse(phanterwebCacheDataJS.maps.map_search_bar)
     MainThis.map_search_bar = MainThis.map_search_bar.split("§table_name§").join(table_name)
-    console.error(MainThis.map_search_bar)
     MainThis.table_name = table_name;
     MainThis.fields = data.fields;
     MainThis.t_html = $('<table id="'+table_name+'" class="phantertables"></table>')
@@ -1872,21 +1880,19 @@ var PhanterTables = function(table_name, data){
             </span>\
             <ul id="dropdown_'+table_name+'_§id_name§" class="dropdown-content phantertables-menu-container">§menu_itens§</ul>\
         </td>'
-    MainThis.menu_li = '<li><span id="phantertables-menu-item_'+table_name+'_§id_name§_§id_submenu_name§" class="phantertables-menu-item" data-source="phantertables-row-'+table_name+'-§id_name§">§label§</span></li>'
+    MainThis.menu_li = '<li><span id="phantertables-menu-item_'+table_name+'_§id_name§_§id_submenu_name§" class="phantertables-menu-item phantertables-menu-item_§id_submenu_name§" data-source="phantertables-row-'+table_name+'-§id_name§">§label§</span></li>'
     MainThis.menuButtons = null;
     MainThis.fieldsSearch = null;
     MainThis._setList = function() {
         var lista = MainThis.data[table_name]
-        console.error(lista)
         var cont = 0;    
         for (var i = 0; i < lista.length; i++) {
             var row = lista[i];
-            console.error(row)
             if (cont == 0) {
                 MainThis._setField();
             };
             cont++;
-            var html_r = $('<tr id="phantertables-row-'+MainThis.table_name+'-'+lista[i].id+'" class="phantertables-row data-auth_user=\''+JSON.stringify(lista[i])+'\'"></tr>')
+            var html_r = $('<tr id="phantertables-row-'+MainThis.table_name+'-'+lista[i].id+'" class="phantertables-row" data-auth_user=\''+JSON.stringify(lista[i])+'\'"></tr>')
             for (var x in MainThis.fields) {
                 var html_f = $('<td id="phantertables-field-'+x+'-'+lista[i].id+'" class="phantertables-field">'+lista[i][x]+'</td>')
                 $(html_r).append(html_f);
@@ -2617,13 +2623,113 @@ var PhanterPages = function(){
     MainThis.admin = function(){
        
     };
-    MainThis.admin_users = function(){
+    MainThis.admin_auth_user = function(){
         MainThis.getRemoteJson({url:"/api/admin/users",
             success: function(data){
-                var tableusers = new PhanterTables("auth_users", data)
-                tableusers.addMenu("editar", "Editar")
-                var html = tableusers.init()
-                $("#lista_auth_users").html(html)
+                var auth_user = new PhanterTables("auth_user", data)
+                auth_user.addMenu("editar", "Editar")
+                var html = auth_user.init()
+                $("#lista_auth_user").html(html)
+                $(".phantertables-menu-item_editar").each(function(){
+                    var source = $(this).attr("data-source")
+                    var data_user = JSON.parse($("#"+source).attr("data-auth_user"))
+                    data_user = JSON.stringify({'edit': data_user})
+                    console.error("#"+source)
+                    $(this).attr('link_href', 'page_admin_auth_user_form')
+                    $(this).attr('link_href_parameters', data_user)
+                })
+
+            },
+            error: function(data){
+                _print("Getting auth users to table", "ERROR")
+            }
+        })
+    };
+    MainThis.admin_auth_user_form = function(){
+        var parameters = MainThis.getPamameters();
+        if("edit" in parameters){
+
+            var data_user = parameters.edit
+            for (var x in data_user){
+                var id_input = "#input-"+x
+                    console.error(id_input)
+                var type_input = $(id_input).attr("type")
+                console.error(type_input)
+                if(type_input == "text"){
+                    $(id_input).val(data_user[x])
+                } else if (type_input == "checkbox"){
+                    if(data_user[x]){
+                        $(id_input).attr('checked', 'checked')
+                    }  
+                }
+            }
+            $("#phantergallery_object-auth_user").attr("data-upload-src-img", data_user.user_image)
+
+            $("#input-chips-groups-auth_user").val(data_user.groups);
+            $("#input-activate_date_expire").phanterMask('datetime');
+            $("#input-rest_date").phanterMask('datetime');
+            $("#input-datetime_next_attempt_to_login").phanterMask('datetime');
+            $("#input-temporary_password_expire").phanterMask('datetime');
+            phanterpages.getRemoteJson({
+                url:'/api/admin/groups',
+                success: function(data){
+                    var auth_group = data.auth_group;
+                    var auth_group_chips = []
+                    for (var i = 0; i < auth_group.length; i++) {
+                        var t_group = auth_group[i]
+                        t_group['chipname'] = auth_group[i].role
+                        auth_group_chips.push(t_group)
+                    }
+
+                    $("#chips_auth_user").phanterwebChips(auth_group_chips);
+                    PHANTERWEB.reload()
+                }
+            });
+            MainThis.getCsrfToInput(
+                "auth_user",
+                "#input-csrf_token",
+                function(){
+                    //$("#form-auth_user").phanterwebFormValidator();
+                });
+            $("#auth_user-ajax-button-save").off("click.auth_user_form").on("click.auth_user_form", function(){
+
+                var formData = new FormData($("#form-auth_user")[0]);
+                //formData.set("phantergallery_upload-input-file-profile", phanterGallery.phanterGalleryObjs[0].getCuttedImage())
+                MainThis.PUT({url:"/api/admin/users/"+data_user.id,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data){
+                        if(data.status=="OK"){
+
+                            M.toast({html: "Usuário editado com sucesso!"})
+                            phanterpages.getDataPage("page_admin_auth_user")
+
+                        } else if(data.status=="ERROR"){
+                            M.toast({html: data.message})
+                            if("csrf" in data){
+                                $("#input-csrf_token").val(data.csrf)
+                            }
+                        }
+                        $(".main-progress-bar").removeClass("enabled");
+                    },
+                    error: function(data){
+                        M.toast({html: "Erro na conexão"})
+                        $(".progressbar-form-modal").removeClass("enabled");
+                        $(".main-progress-bar").removeClass("enabled");
+                        _print(data, "profile: "+remoteHostAddress+"/api/user/profile")
+                    },
+                });
+            });
+        };
+    };
+    MainThis.admin_groups = function(){
+        MainThis.getRemoteJson({url:"/api/admin/groups",
+            success: function(data){
+                var auth_group = new PhanterTables("auth_group", data)
+                auth_group.addMenu("editar", "Editar")
+                var html = auth_group.init()
+                $("#lista_auth_group").html(html)
             },
             error: function(data){
 
@@ -2757,6 +2863,8 @@ var PhanterPages = function(){
                 _print(data, "getRemoteJson: "+remoteHostAddress+obj_param.url);
                 if ("error" in obj_param){
                     obj_param.error(data);
+                } else {
+                    M.toast({html: "Erro de Conexão!"})
                 }
             },
             dataType:"json",
@@ -3282,7 +3390,10 @@ var PhanterPages = function(){
                                     getPage(page_obj, data)
                                 }
                             },
-                            error:function(data){}
+                            error:function(data){
+                                _print(data, "getRemoteJson \"/api/users\": Erro ao tentar capturar JSON")
+
+                            }
                         });
                     };
                 } else {
@@ -3504,7 +3615,6 @@ var PHANTERWEB = function(parameters){
         ComponenteMenu.init()
     }
     this.reload = function(){
-        M.AutoInit();
         $(".materilize-button-show-hidde-input-new")
             .off("click.materialize_select")
             .on("click.materialize_select", function(){
@@ -3532,10 +3642,13 @@ var PHANTERWEB = function(parameters){
                 $("#"+id_input).val(value);
             });
         });
+        phanterGallery
         M.updateTextFields();
         links_href();
         ajustar_imagem();
         links_href();
+        phanterSvgs.update()
+        phanterGallery.update(true)
         ComponenteMenu.init()     
     }
     return this

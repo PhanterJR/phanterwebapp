@@ -14,7 +14,7 @@ html = CONCATENATE(
         DIV(
             DIV(
                 DIV(
-                    DIV(_id="lista_auth_users"),
+                    DIV(_id="lista_auth_user", _class="simple-border"),
                     _class="phanterweb-card-container phanterpages-card_buttons-container"),
                 _class="card"
             ),
@@ -22,5 +22,5 @@ html = CONCATENATE(
         ),
         _class="phanterweb-container"
     ),
-    SCRIPTMINIFY("phanterpages.admin_users();"),
+    SCRIPTMINIFY("phanterpages.admin_auth_user();"),
 )

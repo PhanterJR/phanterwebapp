@@ -12,6 +12,7 @@ from ..models.phantergallery import UserImage
 from phanterweb.validators import ValidateReqArgs
 from phanterweb.phantergallery import PhanterGalleryCutter
 from phanterweb.captcha import Captcha
+from phanterweb.db_date_datetime import conv_datetime
 from flask import request, url_for, Markup, send_from_directory
 from flask_restful import Resource, reqparse
 from functools import wraps
@@ -24,6 +25,7 @@ import os
 
 parser = reqparse.RequestParser()
 time = app.config['DEFAULT_TIME_TOKEN_EXPIRES']
+processError = ErrorLog()
 
 
 def requires_login(
@@ -150,7 +152,6 @@ def requires_login(
                             activated = True
                         else:
                             activated = False
-                        user_image = UserImage(usuario.id).image
                         email = Markup.escape(usuario.email)
                         is_to_remember = True if usuario.remember_me else False
                         user_roles = ["user"]
@@ -158,22 +159,8 @@ def requires_login(
                             user_roles = usuario.roles
                             if "user" not in user_roles:
                                 user_roles.append("user")
-                        if user_image:
-                            reader = Serialize(
-                                app.config['SECRET_KEY_USERS'],
-                                int(timedelta(365).total_seconds())
-                            )
-                            autorization = reader.dumps(
-                                {'token': new_token.decode('utf-8')}
-                            )
-                            url_image_user = api.url_for(
-                                RestImageUser,
-                                id_image=user_image.id,
-                                autorization=autorization,
-                                _external=True
-                            )
-                        else:
-                            url_image_user = url_for('static', filename="images/user.png")
+                        user_image = UserImage(usuario.id)
+                        url_image_user = user_image.url_image
                         first_name = Markup.escape(usuario.first_name)
                         last_name = Markup.escape(usuario.last_name)
                         user_name = "%s %s" % (first_name, last_name)
@@ -300,6 +287,151 @@ def requires_csrf(
     return real_decorator
 
 
+def data_auth_user(query_auth_user):
+    q_membership = db(db.auth_membership.auth_user == query_auth_user.id).select()
+    groups = ""
+    cont = 0
+    g_proc = []
+    for x in q_membership:
+        if x.auth_group not in g_proc:
+            g_proc.append(x.auth_group)
+            if cont == 0:
+                groups = "%s" % x.auth_group
+            else:
+                groups += "|%s" % x.auth_group
+            cont += 1
+    datetime_next_attempt_to_login = conv_datetime(
+        query_auth_user.datetime_next_attempt_to_login, "%d/%m/%Y %H:%M:%S")
+    temporary_password_expire = conv_datetime(
+        query_auth_user.temporary_password_expire, "%d/%m/%Y %H:%M:%S")
+    activate_date_expire = conv_datetime(
+        query_auth_user.activate_date_expire, "%d/%m/%Y %H:%M:%S")
+    rest_date = conv_datetime(
+        query_auth_user.rest_date, "%d/%m/%Y %H:%M:%S")
+
+    user_image = UserImage(query_auth_user.id)
+    url_image_user = user_image.url_image
+
+    data = {
+        'id': query_auth_user.id,
+        'user_image': url_image_user,
+        'first_name': query_auth_user.first_name,
+        'last_name': query_auth_user.last_name,
+        'email': query_auth_user.email,
+        'remember_me': query_auth_user.remember_me,
+        'password_hash': query_auth_user.password_hash,
+        'attempts_to_login': query_auth_user.attempts_to_login,
+        'datetime_next_attempt_to_login': datetime_next_attempt_to_login,
+        'temporary_password': query_auth_user.temporary_password,
+        'temporary_password_hash': query_auth_user.temporary_password_hash,
+        'temporary_password_expire': temporary_password_expire,
+        # 'activate_hash': query_auth_user.activate_hash,
+        'activate_code': query_auth_user.activate_code,
+        'attempts_to_activate': query_auth_user.attempts_to_activate,
+        'activate_date_expire': activate_date_expire,
+        'retrieve_hash': query_auth_user.retrieve_hash,
+        'permit_double_login': query_auth_user.permit_double_login,
+        'rest_key': query_auth_user.rest_key,
+        'rest_token': query_auth_user.rest_token,
+        'rest_date': rest_date,
+        # 'rest_expire': query_auth_user.rest_expire,
+        'activated': query_auth_user.activated,
+        'groups': groups
+    }
+    return data
+
+
+def process_list_string(value):
+    new_value = []
+    if value:
+        for x in value.split("|"):
+            if x:
+                try:
+                    x = int(x)
+                    new_value.append(x)
+                except Exception as e:
+                    frameinfo = getframeinfo(currentframe())
+                    processError.error(
+                        "".join([
+                            "file: %s" % frameinfo.filename,
+                            "\nline: %s" % frameinfo.lineno,
+                            "\ndef: process_list_string",
+                            "\nvalue: %s" % value,
+                            "\nerror: %s" % e,
+                            "\nmessage: O valor da lista não é um número inteiro"
+                        ])
+                    )
+    return new_value
+
+
+def process_checkbox(value):
+    if value == "on":
+        return True
+    else:
+        return False
+
+def process_intenger(value):
+    try:
+        value = int(value)
+        return value
+    except Exception as e:
+        frameinfo = getframeinfo(currentframe())
+        processError.error(
+            "".join([
+                "file: %s" % frameinfo.filename,
+                "\nline: %s" % frameinfo.lineno,
+                "\ndef: process_intenger",
+                "\nvalue: %s" % value,
+                "\nerror: %s" % e,
+                "\nmessage: O valor não pode ser convertido para inteiro"
+            ])
+        )
+
+        return 0
+
+
+def process_date(value):
+    import time
+
+    try:
+        tempo = datetime(*(time.strptime(str(value), '%d/%m/%Y')[0:6]))
+        return tempo
+    except Exception as e:
+        frameinfo = getframeinfo(currentframe())
+        processError.error(
+            "".join([
+                "file: %s" % frameinfo.filename,
+                "\nline: %s" % frameinfo.lineno,
+                "\ndef: process_intenger",
+                "\nvalue: %s" % value,
+                "\nerror: %s" % e,
+                "\nmessage: A data não pode ser convertida"
+            ])
+        )
+        return None
+
+
+def process_datetime(value):
+    import time
+
+    try:
+        tempo = datetime(*(time.strptime(str(value), '%d/%m/%Y %H:%M:%S')[0:6]))
+        return tempo
+    except Exception as e:
+        frameinfo = getframeinfo(currentframe())
+        processError.error(
+            "".join([
+                "file: %s" % frameinfo.filename,
+                "\nline: %s" % frameinfo.lineno,
+                "\ndef: process_intenger",
+                "\nvalue: %s" % value,
+                "\nerror: %s" % e,
+                "\nmessage: A datahora não pode ser convertida"
+            ])
+        )
+        return None
+
+
 class RestApi(Resource):
     """
         url: /api
@@ -400,40 +532,34 @@ class RestActive(Resource):
             code = int(code)
         except Exception as e:
             return {'status': 'ERROR', 'message': 'Código Inválido!'}
-        if 'usuario' in kargs:
-            usuario = kargs['usuario']
-            if usuario:
-                if not usuario.activated:
-                    usuario.increment_attempts_to_activate()
-                    attempts_to_activate = usuario.attempts_to_activate
-                    if attempts_to_activate < 4:
-                        now = datetime.now()
-                        if usuario.activate_code and (usuario.activate_code == code):
-                            if usuario.activate_date_expire:
-                                activate_date_expire = usuario.activate_date_expire
-                                if now > activate_date_expire:
-                                    return {'status': 'ERROR', 'message': 'Código Expirado!'}
-                                else:
-                                    usuario.activate_code = None
-                                    usuario.attempts_to_activate = None
-                                    usuario.activate_date_expire = None
-                                    usuario.activated = True
-                                    usuario.commit()
-                                    return {
-                                        'status': 'OK',
-                                        'message': 'Código Aceito! Conta ativada.'}
-                            else:
-                                return {'status': 'ERROR', 'message': 'Código Expirado!'}
+        usuario = kargs['usuario']
+        if not usuario.activated:
+            usuario.increment_attempts_to_activate()
+            attempts_to_activate = usuario.attempts_to_activate
+            if attempts_to_activate < 4:
+                now = datetime.now()
+                if usuario.activate_code and (usuario.activate_code == code):
+                    if usuario.activate_date_expire:
+                        activate_date_expire = usuario.activate_date_expire
+                        if now > activate_date_expire:
+                            return {'status': 'ERROR', 'message': 'Código Expirado!'}
                         else:
-                            return {'status': 'ERROR', 'message': 'Código Inválido!'}
+                            usuario.activate_code = None
+                            usuario.attempts_to_activate = None
+                            usuario.activate_date_expire = None
+                            usuario.activated = True
+                            usuario.commit()
+                            return {
+                                'status': 'OK',
+                                'message': 'Código Aceito! Conta ativada.'}
                     else:
-                        return {'status': 'ERROR', 'message': 'É permitido apenas 3 tentativas!'}
+                        return {'status': 'ERROR', 'message': 'Código Expirado!'}
                 else:
-                    return {'status': 'ERROR', 'message': 'Sua conta já está ativada!'}
+                    return {'status': 'ERROR', 'message': 'Código Inválido!'}
             else:
-                return {'status': 'ERROR', 'message': 'Usuário ou/e token Inválido(s)!'}
+                return {'status': 'ERROR', 'message': 'É permitido apenas 3 tentativas!'}
         else:
-            return {'status': 'ERROR', 'message': 'Usuário ou/e token Inválido(s)!'}
+            return {'status': 'ERROR', 'message': 'Sua conta já está ativada!'}
 
 
 class RestRequestPassword(Resource):
@@ -594,7 +720,6 @@ class RestImageUser(Resource):
                 "user.png"
             )
 
-
 class RestUsers(Resource):
 
     @requires_login()
@@ -607,7 +732,6 @@ class RestUsers(Resource):
                 activated = True
             else:
                 activated = False
-            user_image = UserImage(usuario.id).image
             email = Markup.escape(usuario.email)
             is_to_remember = True if usuario.remember_me else False
             user_roles = ["user"]
@@ -615,22 +739,8 @@ class RestUsers(Resource):
                 user_roles = usuario.roles
                 if "user" not in user_roles:
                     user_roles.append("user")
-            if user_image:
-                reader = Serialize(
-                    app.config['SECRET_KEY_USERS'],
-                    int(timedelta(365).total_seconds())
-                )
-                autorization = reader.dumps(
-                    {'token': token}
-                )
-                url_image_user = api.url_for(
-                    RestImageUser,
-                    id_image=user_image.id,
-                    autorization=autorization,
-                    _external=True
-                )
-            else:
-                url_image_user = url_for('static', filename="images/user.png")
+            user_image = UserImage(usuario.id)
+            url_image_user = user_image.url_image
             first_name = Markup.escape(usuario.first_name)
             last_name = Markup.escape(usuario.last_name)
             user_role = "Usuário"
@@ -848,21 +958,8 @@ class RestUsers(Resource):
                 )
                 usuario.commit()
                 usuario = User(id_user=usuario.id)
-                user_image = UserImage(usuario.id).image
-                if user_image:
-                    reader = Serialize(
-                        app.config['SECRET_KEY_USERS'],
-                        int(timedelta(365).total_seconds())
-                    )
-                    autorization = reader.dumps({'token': token})
-                    url_image_user = api.url_for(
-                        RestImageUser,
-                        id_image=user_image.id,
-                        autorization=autorization,
-                        _external=True
-                    )
-                else:
-                    url_image_user = url_for('static', filename="images/user.png")
+                user_image = UserImage(usuario.id)
+                url_image_user = user_image.url_image
                 user_role = "Usuário"
                 if usuario.roles:
                     if "administrator" in usuario.roles:
@@ -903,10 +1000,71 @@ class RestUsers(Resource):
                 }
 
 
+class RestAdminGroups(Resource):
+    @requires_login(authorized_roles=['root'], defid="RestAdminGroups.get")
+    def get(self, *args, **kargs):
+        db._adapter.reconnect()
+        q_groups = db(db.auth_group.id > 0).select()
+        t_groups = db(db.auth_group.id > 0).count()
+        fields = {x: db.auth_group[x].label for x in db.auth_group.fields}
+        return {
+            'status': 'OK',
+            'fields': fields,
+            'table_length': t_groups,
+            'auth_group': [{
+                'id': x.id,
+                'role': x.role,
+                'description': x.description
+            } for x in q_groups]
+        }
+
+
+class RestAdminImageUser(Resource):
+    def get(self, autorization):
+        reader_autorization = Serialize(app.config['SECRET_KEY_USERS'])
+        has_autorization = False
+        try:
+            message = reader_autorization.loads(autorization)
+            id_user = message['id_user']
+            has_autorization = True
+        except BadSignature:
+            has_autorization = False
+        except SignatureExpired:
+            has_autorization = False
+        if has_autorization:
+            usuario = User(id_user=id_user)
+            if usuario:
+                user_image = UserImage(usuario.id).image
+                if user_image:
+                    filename = "%s.%s" % (user_image.id, user_image.extensao)
+                    folder = os.path.join(app.root_path, user_image.folder)
+                    return send_from_directory(folder, filename)
+                else:
+                    return send_from_directory(
+                        os.path.join(app.root_path, "static", "images"),
+                        "user.png"
+                    )
+            else:
+                return send_from_directory(
+                    os.path.join(app.root_path, "static", "images"),
+                    "user.png"
+                )
+        else:
+            return send_from_directory(
+                os.path.join(app.root_path, "static", "images"),
+                "user.png"
+            )
+
+
 class RestAdminUsers(Resource):
     @requires_login(authorized_roles=['root'], defid="RestAdminUsers.get")
     def get(self, *args, **kargs):
         db._adapter.reconnect()
+        if "id_auth_user" in kargs:
+            q_user = db(db.auth_user.id == kargs["id_auth_user"]).select().first()
+            if q_user:
+                pass
+        q_auth_group = db(db.auth_group.id > 0).select()
         q_users = db(db.auth_user.id > 0).select()
         t_users = db(db.auth_user.id > 0).count()
         fields = {x: db.auth_user[x].label for x in db.auth_user.fields}
@@ -914,31 +1072,151 @@ class RestAdminUsers(Resource):
             'status': 'OK',
             'fields': fields,
             'table_length': t_users,
-            'auth_users': [{
+            'auth_user': [data_auth_user(x) for x in q_users],
+            'auth_group': [{
                 'id': x.id,
-                'first_name': x.first_name,
-                'last_name': x.last_name,
-                'email': x.email,
-                'remember_me': x.remember_me,
-                'password_hash': x.password_hash,
-                'attempts_to_login': x.attempts_to_login,
-                'datetime_next_attempt_to_login': str(x.datetime_next_attempt_to_login),
-                'temporary_password': x.temporary_password,
-                'temporary_password_hash': x.temporary_password_hash,
-                'temporary_password_expire': str(x.temporary_password_expire),
-                'activate_hash': x.activate_hash,
-                'activate_code': x.activate_code,
-                'attempts_to_activate': x.attempts_to_activate,
-                'activate_date_expire': str(x.activate_date_expire),
-                'retrieve_hash': x.retrieve_hash,
-                'permit_double_login': x.permit_double_login,
-                'rest_key': x.rest_key,
-                'rest_token': x.rest_token,
-                'rest_date': str(x.rest_date),
-                'rest_expire': x.rest_expire,
-                'activated': x.activated,
-            } for x in q_users]
+                'role': x.role,
+                'description': x.description} for x in q_auth_group]
         }
+
+    @requires_login(
+        authorized_roles=['root'],
+        check_csrf=True,
+        intention_csrf="auth_user",
+        defid="RestAdminUsers.put")
+    def put(self, *args, **kargs):
+        id_auth_user = kargs["id_auth_user"]
+        csrf_token = kargs['new_csrf_token']
+        parser.add_argument('first_name')
+        parser.add_argument('last_name')
+        parser.add_argument('email')
+        parser.add_argument('remember_me')
+        parser.add_argument('attempts_to_login')
+        parser.add_argument('datetime_next_attempt_to_login')
+        parser.add_argument('temporary_password_expire')
+        parser.add_argument('activate_code')
+        parser.add_argument('attempts_to_activate')
+        parser.add_argument('activate_date_expire')
+        parser.add_argument('permit_double_login')
+        parser.add_argument('rest_date')
+        parser.add_argument('activated')
+        parser.add_argument('phantergallery_upload-input-file-auth_user')
+        parser.add_argument('phantergallery-input-name-cutterSizeX-auth_user')
+        parser.add_argument('phantergallery-input-name-cutterSizeY-auth_user')
+        parser.add_argument('phantergallery-input-name-positionX-auth_user')
+        parser.add_argument('phantergallery-input-name-positionY-auth_user')
+        parser.add_argument('phantergallery-input-name-newSizeX-auth_user')
+        parser.add_argument('phantergallery-input-name-newSizeY-auth_user')
+        parser.add_argument('chips-groups-auth_user')
+        args = parser.parse_args()
+        app.logger.debug(args)
+        first_name = args['first_name']
+        last_name = args['last_name']
+        email = args['email']
+        remember_me = process_checkbox(args['remember_me'])
+        permit_double_login = process_checkbox(args['permit_double_login'])
+        attempts_to_login = process_intenger(args['attempts_to_login'])
+        activate_code = process_intenger(args['activate_code'])
+        attempts_to_activate = process_intenger(args['attempts_to_activate'])
+        activated = process_checkbox(args['activated'])
+        datetime_next_attempt_to_login = process_datetime(args['datetime_next_attempt_to_login'])
+        temporary_password_expire = process_datetime(args['temporary_password_expire'])
+        activate_date_expire = process_datetime(args['activate_date_expire'])
+        rest_date = process_datetime(args['rest_date'])
+        list_groups = [x.id for x in db(db.auth_group).select()]
+        chips_groups_auth_user = process_list_string(args['chips-groups-auth_user'])
+        validate = ValidateReqArgs(args)
+        validate.updateOrInsertArg('chips-groups-auth_user', chips_groups_auth_user)
+        validate.isNotEmpty("first_name", "O nome não pode ser vazio.")
+        validate.isNotEmpty("last_name", "O sobrenome não pode ser vazio.")
+        validate.isEmail("email", "O email é inválido.")
+        validate.canIsEmpty("datetime_next_attempt_to_login", empty_values=["__/__/____ __:__:__"])
+        validate.canIsEmpty("temporary_password_expire", empty_values=["__/__/____ __:__:__"])
+        validate.canIsEmpty("activate_date_expire", empty_values=["__/__/____ __:__:__"])
+        validate.canIsEmpty("rest_date", empty_values=["__/__/____ __:__:__"])
+        validate.canIsEmpty("chips-groups-auth_user")
+        validate.canIsEmpty("attempts_to_login")
+        validate.canIsEmpty("attempts_to_activate")
+        validate.match('attempts_to_activate', "Intenger", r"^[0-9]{0,2}$", "O valor tem que ser um inteiro")
+        validate.match('attempts_to_login', "Intenger1", r"^[0-9]{0,2}$", "O valor tem que ser um inteiro")
+        validate.isInSet('chips-groups-auth_user', list_groups, "Não é um grupo válido")
+        import json
+        app.logger.debug(json.dumps(validate.process(), indent=2))
+        if validate.anyError:
+            return {
+                'status': 'ERROR',
+                'message': 'Erros nos dados enviados!',
+                'csrf': csrf_token,
+                'validators': validate.validators
+            }
+        else:
+            q_user = db(db.auth_user.id == id_auth_user).select().first()
+            q_user.update_record(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                remember_me=remember_me,
+                attempts_to_login=attempts_to_login,
+                datetime_next_attempt_to_login=datetime_next_attempt_to_login,
+                temporary_password_expire=temporary_password_expire,
+                activate_code=activate_code,
+                attempts_to_activate=attempts_to_activate,
+                activate_date_expire=activate_date_expire,
+                permit_double_login=permit_double_login,
+                rest_date=rest_date,
+                activated=activated)
+            q_group = db(db.auth_membership.auth_user == id_auth_user).select()
+            for x in q_group:
+                if x.auth_group in chips_groups_auth_user:
+                    pass
+                else:
+                    x.delete_record()
+
+            for y in chips_groups_auth_user:
+                q_group = db(
+                    (db.auth_membership.auth_user == id_auth_user) &
+                    (db.auth_membership.auth_group == y)).select().first()
+                if not q_group:
+                    db.auth_membership.insert(auth_user=id_auth_user,
+                        auth_group=y)
+
+            if 'phantergallery_upload-input-file-auth_user' in request.files:
+                arquivo = request.files['phantergallery_upload-input-file-auth_user']
+                cutterSizeX = args['phantergallery-input-name-cutterSizeX-auth_user']
+                cutterSizeY = args['phantergallery-input-name-cutterSizeY-auth_user']
+                positionX = args['phantergallery-input-name-positionX-auth_user']
+                positionY = args['phantergallery-input-name-positionY-auth_user']
+                newSizeX = args['phantergallery-input-name-newSizeX-auth_user']
+                newSizeY = args['phantergallery-input-name-newSizeY-auth_user']
+                if arquivo.filename != '':
+                    imageName = secure_filename(arquivo.filename)
+                    imageBytes = arquivo
+                    cut_file = PhanterGalleryCutter(
+                        imageName=imageName,
+                        imageBytes=imageBytes,
+                        cutterSizeX=cutterSizeX,
+                        cutterSizeY=cutterSizeY,
+                        positionX=positionX,
+                        positionY=positionY,
+                        newSizeX=newSizeX,
+                        newSizeY=newSizeY
+                    )
+                    novo_arquivo = cut_file.getImage()
+                    user_image = UserImage(
+                        id_auth_user, app.config['UPLOAD_FOLDER']
+                    )
+                    user_image.set_image(
+                        novo_arquivo,
+                        cut_file.nome_da_imagem,
+                        cut_file.extensao
+                    )
+            db.commit()
+            q_user = db(db.auth_user.id == id_auth_user).select().first()
+            return {
+                'status': 'OK',
+                'message': 'Usuário editado com sucesso',
+                'auth_user': data_auth_user(q_user)
+            }
 
 
 class RestServerInfo(Resource):
@@ -1074,22 +1352,8 @@ class RestAuthenticater(Resource):
                         user_roles = usuario.roles
                         if "user" not in user_roles:
                             user_roles.append("user")
-                    user_image = UserImage(usuario.id).image
-                    if user_image:
-                        reader = Serialize(
-                            app.config['SECRET_KEY_USERS'], int(timedelta(365).total_seconds())
-                        )
-                        autorization = reader.dumps(
-                            {'token': token.decode('utf-8')}
-                        )
-                        url_image_user = api.url_for(
-                            RestImageUser,
-                            id_image=user_image.id,
-                            autorization=autorization,
-                            _external=True
-                        )
-                    else:
-                        url_image_user = url_for('static', filename="images/user.png")
+                    user_image = UserImage(usuario.id)
+                    url_image_user = user_image.url_image
                     usuario.attempts_to_login = 0
                     usuario.commit()
                     frameinfo = getframeinfo(currentframe())
@@ -1178,4 +1442,6 @@ api.add_resource(RestCaptcha, '/api/captcha')
 api.add_resource(RestUsers, '/api/users')
 api.add_resource(RestServerInfo, '/api/server')
 api.add_resource(RestAuthenticater, '/api/authenticater')
-api.add_resource(RestAdminUsers, '/api/admin/users')
+api.add_resource(RestAdminImageUser, '/api/auth_user/image/<autorization>')
+api.add_resource(RestAdminUsers, '/api/admin/users', '/api/admin/users/<id_auth_user>')
+api.add_resource(RestAdminGroups, '/api/admin/groups')

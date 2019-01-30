@@ -28,7 +28,7 @@ db.define_table('auth_user',
     Field('temporary_password', 'text'),
     Field('temporary_password_hash', 'text'),
     Field('temporary_password_expire', 'datetime'),
-    Field('activate_hash', 'string', unique=True),
+#    Field('activate_hash', 'string', unique=True),
     Field('activate_code', 'integer', default=0),
     Field('attempts_to_activate', 'integer'),
     Field('activate_date_expire', 'datetime'),
@@ -37,47 +37,37 @@ db.define_table('auth_user',
     Field('rest_key', 'string', unique=True),
     Field('rest_token', 'string', unique=True),
     Field('rest_date', 'datetime'),
-    Field('rest_expire', 'integer'),
+#    Field('rest_expire', 'integer'),
     Field('activated', 'boolean', default=False, notnull=True))
 
 db.define_table('auth_group',
     Field('role', 'string'),
     Field('description', 'text'))
 
-db.define_table(
-    'auth_membership',
+db.define_table('auth_membership',
     Field('auth_user', 'reference auth_user'),
-    Field('auth_group', 'reference auth_group')
-)
+    Field('auth_group', 'reference auth_group'))
 
-db.define_table(
-    'auth_activity',
+db.define_table('auth_activity',
     Field('auth_user', 'reference auth_user'),
     Field('request', 'text'),
     Field('activity', 'string'),
-    Field('date_activity', 'datetime', default=datetime.now())
-)
+    Field('date_activity', 'datetime', default=datetime.now()))
 
-db.define_table(
-    'csrf',
+db.define_table('csrf',
     Field('token', 'text'),
     Field('proposito', 'string'),
-    Field('date_created', 'datetime')
-)
+    Field('date_created', 'datetime'))
 
-db.define_table(
-    'email_user_history',
+db.define_table('email_user_history',
     Field('auth_user', 'reference auth_user'),
     Field('email', 'string'),
-    Field('data_change', 'datetime')
-)
+    Field('data_change', 'datetime'))
 
-db.define_table(
-    'error_log',
+db.define_table('error_log',
     Field('description', 'text'),
     Field('request', 'text'),
-    Field('date_operations', 'datetime', default=datetime.now())
-)
+    Field('date_operations', 'datetime', default=datetime.now()))
 
 if db(db.auth_group).isempty():
     db._adapter.reconnect()
@@ -281,18 +271,18 @@ class User(object):
             self.data_user.update_record(temporary_password_expire=value)
             self._temporary_password_expire = value
 
-    @property
-    def activate_hash(self):
-        self._activate_hash = None
-        if self.data_user:
-            self._activate_hash = self.data_user.activate_hash
-        return self._activate_hash
+    # @property
+    # def activate_hash(self):
+    #     self._activate_hash = None
+    #     if self.data_user:
+    #         self._activate_hash = self.data_user.activate_hash
+    #     return self._activate_hash
 
-    @activate_hash.setter
-    def activate_hash(self, value):
-        if self.data_user:
-            self.data_user.update_record(activate_hash=value)
-            self._activate_hash = value
+    # @activate_hash.setter
+    # def activate_hash(self, value):
+    #     if self.data_user:
+    #         self.data_user.update_record(activate_hash=value)
+    #         self._activate_hash = value
 
     @property
     def activate_code(self):
@@ -398,18 +388,18 @@ class User(object):
             self.data_user.update_record(rest_date=value)
             self._rest_date = value
 
-    @property
-    def rest_expire(self):
-        self._rest_expire = None
-        if self.data_user:
-            self._rest_expire = self.data_user.rest_expire
-        return self._rest_expire
+    # @property
+    # def rest_expire(self):
+    #     self._rest_expire = None
+    #     if self.data_user:
+    #         self._rest_expire = self.data_user.rest_expire
+    #     return self._rest_expire
 
-    @rest_expire.setter
-    def rest_expire(self, value):
-        if self.data_user:
-            self.data_user.update_record(rest_expire=value)
-            self._rest_expire = value
+    # @rest_expire.setter
+    # def rest_expire(self, value):
+    #     if self.data_user:
+    #         self.data_user.update_record(rest_expire=value)
+    #         self._rest_expire = value
 
     @property
     def permit_double_login(self):
@@ -572,8 +562,8 @@ class User(object):
                 if app.debug:
                     app.logger.debug(password)
                 titulo = "Senha temporária de recuperação"
-                text_email = '\tOlá %s %s, foi solicitado uma alteração de senha de uma conta vinculada a este email, utilize a seguinte senha para prosseguir com a alteração: %s.\nBasta acessar o site e logar com esta senha que foi enviada, ela estará ativa apenas 10 minutos.' % (first_name, last_name, password)
-                html_email = '<h3>Olá %s %s,</h3><br /><p>foi solicitado uma alteração de senha de uma conta vinculada a este email, utilize a seguinte senha para prosseguir com a alteração: <b>%s</b></p><p>Basta acessar o site e logar com esta senha que foi enviada, ela estará ativa apenas 10 minutos.</p>' % (first_name, last_name, password)
+                text_email = '\tOlá %s %s, foi solicitada uma alteração de senha de uma conta vinculada a este email, utilize a seguinte senha para prosseguir com a alteração: %s.\nBasta acessar o site e logar com esta senha que foi enviada, ela estará ativa apenas 10 minutos.' % (first_name, last_name, password)
+                html_email = '<h3>Olá %s %s,</h3><br /><p>foi solicitada uma alteração de senha de uma conta vinculada a este email, utilize a seguinte senha para prosseguir com a alteração: <b>%s</b></p><p>Basta acessar o site e logar com esta senha que foi enviada, ela estará ativa apenas 10 minutos.</p>' % (first_name, last_name, password)
                 activity_text = 'Tentativa de envio de email com senha temporária.\nStatus do envio: %s'
                 email_ok = True
         if email_ok:

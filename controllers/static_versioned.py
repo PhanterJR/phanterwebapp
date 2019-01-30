@@ -9,6 +9,7 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, "static", "favicons"),
                            "favicon.ico")
 
+
 @app.route('/static-versioned/<version>/<path>/<file>')
 def static_versioned(version, path, file):
     if app_version == version:

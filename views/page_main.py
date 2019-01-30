@@ -5,5 +5,6 @@ from phanterweb.helpers import (
 )
 
 html = DIV(
-        DIV(_class="content_pagina_principal"),
+    DIV(
+        _class="content_pagina_principal"),
     _class='background-empresa')

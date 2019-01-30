@@ -18,11 +18,11 @@ from phanterweb.helpers import (
     FOOTER,
 )
 
-from .extend_left_bar import html as MENU_PRINCIPAL_LEFT_BAR
-from .extend_svg_logo import html as SVG_LOGO
-from .extend_javascript_head import html as JAVASCRIPT_HEAD
-from .extend_css_head import html as CSS_HEAD
-from .extend_javascript_footer import html as JAVASCRIPT_FOOTER
+from ..views.extend_left_bar import html as MENU_PRINCIPAL_LEFT_BAR
+from ..views.extend_svg_logo import html as SVG_LOGO
+from ..views.extend_javascript_head import html as JAVASCRIPT_HEAD
+from ..views.extend_css_head import html as CSS_HEAD
+from ..views.extend_javascript_footer import html as JAVASCRIPT_FOOTER
 from .component_preloader_circle_small import html as LOAD_SMALL
 from .component_preloader_circle_big import html as LOAD_BIG
 

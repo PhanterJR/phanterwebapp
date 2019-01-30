@@ -19,6 +19,10 @@ body.lock{
 #modal_layout{
     transition: height 1s ease, max-height 1s ease;
 }
+.row-auth_user-checkboxs {
+    padding-top: 10px;
+    padding-bottom: 20px;
+}
   main {
     flex: 1 0 auto;
   }
@@ -53,6 +57,9 @@ body.lock{
     border: 1px solid #bfbfbf;
     background-image: linear-gradient(to bottom right, white, #e1e1e1);
     width: 100%;
+}
+.label_icon {
+    width: 15px;
 }
 .card_button:hover {
     background-color: orange;
@@ -1380,11 +1387,16 @@ body.lock{
     padding: 20px;
     margin: 40px;
 }
-#lista_auth_users {
-
-    overflow: auto;
+.simple-border {
     border: 1px solid #dadada;
     border-radius: 5px;
+}
+.phantertable-table-container {
+
+    overflow: auto;
+    background-color: #f0f0f0;
+    margin: 7px;
+    box-shadow: 0px 0px 7px grey inset;
 
 }
 .phantertables-field {

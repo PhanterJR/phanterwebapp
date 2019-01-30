@@ -16,16 +16,16 @@ botoes = [
             "local_library",
             _class="material-icons large administracao_card_material-icons"
         ),
-        "page_admin_auth_users",
-        "Adicionar/Editar clientes"
+        "page_admin_auth_user",
+        "Adicionar/Editar Usuários"
     ),
     (
         "Papeis",
         I(
-            _class="fas fa-boxes large administracao_card_material-icons"
+            _class="fab fa-black-tie large administracao_card_material-icons"
         ),
-        "auth_role",
-        "Adicionar/Editar produtos ao estoque"
+        "page_admin_auth_group",
+        "Adicionar/Editar Papéis"
     ),
     (
         "Configurações",
