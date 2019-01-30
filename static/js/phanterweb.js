@@ -329,7 +329,6 @@ function convertArraysourceinInt(lista){
     return new_list
 }
 function createStringArrayFromListObjData(listObjData){
-    _print(listObjData, "createStringArrayFromListObjData @listObjData")
     var stringinput = "";
     var cont = 0;
     for (var i = 0; i < listObjData.length; i++) {
@@ -340,7 +339,6 @@ function createStringArrayFromListObjData(listObjData){
         }
         cont++
     }
-    _print(stringinput, "createStringArrayFromListObjData return:")
     return stringinput
 }
 //phanterchips
@@ -356,14 +354,12 @@ $.fn.phanterwebChips = function(listobjchips) {
     
     var val_input = [];
     var valor_str_input = $(this).find("input").val();
-    _print(valor_str_input, "phanterwebChips valor do input")
     if(isNotEmpty(valor_str_input)){
         val_input = valor_str_input.split("|");
         val_input = convertArraysourceinInt(val_input)
     } else{
         val_input = [];
     }
-    _print(val_input, "phanterwebChips valor do input em array")
     var new_val_input_just_ids = [];
     for (var i = 0; i < val_input.length; i++) {
         var id_in = val_input[i]
@@ -371,7 +367,6 @@ $.fn.phanterwebChips = function(listobjchips) {
             new_val_input_just_ids.push(id_in)
         }
     }
-     _print(new_val_input_just_ids, "phanterwebChips esta entre os permetidos")
     for(var i=0; i<MainThis.listobjchips.length; i++){
         var id_lis = MainThis.listobjchips[i].id
         if(new_val_input_just_ids.indexOf(id_lis)>-1){
@@ -1785,7 +1780,6 @@ var phanterGalleryAjaxObj = function(url, objectToSend, callback){
 };
 function ajustar_imagem(){
     var altura = $(window).height()-128;
-    _print(altura, "Altura:");
     $(".background-empresa").css('height', altura)
 };
 
@@ -2080,10 +2074,7 @@ var PhanterPages = function(){
                     }
                 },
                 error: function(data){
-                    M.toast({html: "Erro na conexão"})
-                    $(".progressbar-form-modal").removeClass("enabled");
-                    $(".main-progress-bar").removeClass("enabled");
-                    _print(data, "login: "+remoteHostAddress+"/api/user/login");
+                    MainThis.getCaptcha("login")
                 },
             });
     };
@@ -2240,11 +2231,7 @@ var PhanterPages = function(){
                                     }
                                 },
                                 error: function(data){
-                                    M.toast({html: "Erro na conexão"})
                                     MainThis.getCaptcha("register")
-                                    $(".progressbar-form-modal").removeClass("enabled");
-                                    $(".main-progress-bar").removeClass("enabled");
-                                    _print(data, "openModalRegister: "+remoteHostAddress+"/api/user/register")
                                 },
                             });
                         });
@@ -2319,14 +2306,9 @@ var PhanterPages = function(){
                                         MainThis.responseValidator(data)
                                         MainThis.getCaptcha("request-password") 
                                     }
-                                    $(".progressbar-form-modal").removeClass("enabled");
-
                                 },
                                 error: function(data){
-                                    M.toast({html: "Erro na conexão"})
-                                    $(".progressbar-form-modal").removeClass("enabled");
-                                    $(".main-progress-bar").removeClass("enabled");
-                                    _print(data, "openModalRequestPassword: "+remoteHostAddress+"/api/user/request-password")
+                                    MainThis.getCaptcha("request-password")
                                 },
                                 headers:{
                                     'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
@@ -2387,7 +2369,7 @@ var PhanterPages = function(){
                             "profile",
                             "#form-profile-input-csrf_token", 
                             function(){
-                                //$("#form-profile").phanterwebFormValidator();
+                                $("#form-profile").phanterwebFormValidator();
                             });
                         M.updateTextFields();
                         links_href();
@@ -2434,26 +2416,21 @@ var PhanterPages = function(){
                                         $(".main-progress-bar").removeClass("enabled");
                                     },
                                     error: function(data){
-                                        M.toast({html: "Erro na conexão"})
-                                        $(".progressbar-form-modal").removeClass("enabled");
-                                        $(".main-progress-bar").removeClass("enabled");
-                                        _print(data, "profile: "+remoteHostAddress+"/api/user/profile")
+                                        MainThis.getCsrfToInput(
+                                            "profile",
+                                            "#form-profile-input-csrf_token", 
+                                            function(){
+                                                $("#form-profile").phanterwebFormValidator();
+                                            });
                                     },
                                 });
                             });
-                        /*MainThis.actionBtnChangePassword();*/
                     } else {
                         phanterpages.principal();
                     }
                 } else {
 
                 };
-            },
-            error: function(data){
-                M.toast({html: "Erro na conexão"})
-                $(".progressbar-form-modal").removeClass("enabled");
-                $(".main-progress-bar").removeClass("enabled");
-                _print(data, "getRemoteJson: "+remoteHostAddress+"/api/users")
             }
         });  
     };
@@ -2503,7 +2480,12 @@ var PhanterPages = function(){
                     }
                     ComponenteMenu.init();
                     $("#alert-top").slideUp();
-                    MainThis.getCsrfToInput("login", "#form-lock-input-csrf", function(){$("#form-lock-user").phanterwebFormValidator()})
+                    MainThis.getCsrfToInput(
+                        "login",
+                        "#form-lock-input-csrf",
+                        function(){
+                            $("#form-lock-user").phanterwebFormValidator()
+                        })
                     $("#form-lock-button-outher-user").on("click", function(){
                         MainThis.openModalLogin();
                         $("#modal_layout").modal("open")
@@ -2560,22 +2542,18 @@ var PhanterPages = function(){
                                         }
                                     },
                                     error: function(data){
-                                        M.toast({html: "Erro na conexão"})
-                                        $(".progressbar-form-modal").removeClass("enabled");
-                                        $(".main-progress-bar").removeClass("enabled");
-                                        _print(data, "lock: "+remoteHostAddress+'/api/user/login')
+                                        MainThis.getCsrfToInput(
+                                            "login",
+                                            "#form-lock-input-csrf",
+                                            function(){
+                                                $("#form-lock-user").phanterwebFormValidator()
+                                            })
                                     },
                                 });
                         });
                 } else {
 
                 };
-            },
-            error: function(data){
-                M.toast({html: "Erro na conexão"})
-                $(".progressbar-form-modal").removeClass("enabled");
-                $(".main-progress-bar").removeClass("enabled");
-                _print(data, "getRemoteJson: "+remoteHostAddress+"/api/users")
             }
         });  
     };
@@ -2614,8 +2592,12 @@ var PhanterPages = function(){
                         }
                     },
                     error: function(data){
-                        M.toast({html: "Erro na conexão"})
-                        _print(data, "ERROR: changePassword: "+remoteHostAddress+"/api/user/change-password")
+                        MainThis.getCsrfToInput(
+                            "change_password",
+                            "#input-csrf_token",
+                            function(){
+                                $("#form-change-password").phanterwebFormValidator();
+                            });
                     },
                 });
             })
@@ -2634,27 +2616,20 @@ var PhanterPages = function(){
                     var source = $(this).attr("data-source")
                     var data_user = JSON.parse($("#"+source).attr("data-auth_user"))
                     data_user = JSON.stringify({'edit': data_user})
-                    console.error("#"+source)
                     $(this).attr('link_href', 'page_admin_auth_user_form')
                     $(this).attr('link_href_parameters', data_user)
                 })
 
-            },
-            error: function(data){
-                _print("Getting auth users to table", "ERROR")
             }
         })
     };
     MainThis.admin_auth_user_form = function(){
         var parameters = MainThis.getPamameters();
         if("edit" in parameters){
-
             var data_user = parameters.edit
             for (var x in data_user){
                 var id_input = "#input-"+x
-                    console.error(id_input)
                 var type_input = $(id_input).attr("type")
-                console.error(type_input)
                 if(type_input == "text"){
                     $(id_input).val(data_user[x])
                 } else if (type_input == "checkbox"){
@@ -2664,7 +2639,6 @@ var PhanterPages = function(){
                 }
             }
             $("#phantergallery_object-auth_user").attr("data-upload-src-img", data_user.user_image)
-
             $("#input-chips-groups-auth_user").val(data_user.groups);
             $("#input-activate_date_expire").phanterMask('datetime');
             $("#input-rest_date").phanterMask('datetime');
@@ -2689,38 +2663,41 @@ var PhanterPages = function(){
                 "auth_user",
                 "#input-csrf_token",
                 function(){
-                    //$("#form-auth_user").phanterwebFormValidator();
+                    $("#form-auth_user").phanterwebFormValidator();
                 });
-            $("#auth_user-ajax-button-save").off("click.auth_user_form").on("click.auth_user_form", function(){
+            $("#auth_user-ajax-button-save")
+                .off("click.auth_user_form")
+                .on("click.auth_user_form", function(){
+                    var formData = new FormData($("#form-auth_user")[0]);
+                    //formData.set("phantergallery_upload-input-file-profile", phanterGallery.phanterGalleryObjs[0].getCuttedImage())
+                    MainThis.PUT({url:"/api/admin/users/"+data_user.id,
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(data){
+                            if(data.status=="OK"){
 
-                var formData = new FormData($("#form-auth_user")[0]);
-                //formData.set("phantergallery_upload-input-file-profile", phanterGallery.phanterGalleryObjs[0].getCuttedImage())
-                MainThis.PUT({url:"/api/admin/users/"+data_user.id,
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(data){
-                        if(data.status=="OK"){
+                                M.toast({html: "Usuário editado com sucesso!"})
+                                phanterpages.getDataPage("page_admin_auth_user")
 
-                            M.toast({html: "Usuário editado com sucesso!"})
-                            phanterpages.getDataPage("page_admin_auth_user")
-
-                        } else if(data.status=="ERROR"){
-                            M.toast({html: data.message})
-                            if("csrf" in data){
-                                $("#input-csrf_token").val(data.csrf)
+                            } else if(data.status=="ERROR"){
+                                M.toast({html: data.message})
+                                if("csrf" in data){
+                                    $("#input-csrf_token").val(data.csrf)
+                                }
                             }
-                        }
-                        $(".main-progress-bar").removeClass("enabled");
-                    },
-                    error: function(data){
-                        M.toast({html: "Erro na conexão"})
-                        $(".progressbar-form-modal").removeClass("enabled");
-                        $(".main-progress-bar").removeClass("enabled");
-                        _print(data, "profile: "+remoteHostAddress+"/api/user/profile")
-                    },
+                            $(".main-progress-bar").removeClass("enabled");
+                        },
+                        error: function(data){
+                            MainThis.getCsrfToInput(
+                                "auth_user",
+                                "#input-csrf_token",
+                                function(){
+                                    $("#form-auth_user").phanterwebFormValidator();
+                                });
+                        },
+                    });
                 });
-            });
         };
     };
     MainThis.admin_groups = function(){
@@ -2734,37 +2711,85 @@ var PhanterPages = function(){
                     var source = $(this).attr("data-source")
                     var data_user = JSON.parse($("#"+source).attr("data-auth_group"))
                     data_user = JSON.stringify({'edit': data_user})
-                    console.error("#"+source)
                     $(this).attr('link_href', 'page_admin_auth_group_form')
                     $(this).attr('link_href_parameters', data_user)
                 })
                 PHANTERWEB.reload()
-            },
-            error: function(data){
-
             }
-
         })
     };
     MainThis.admin_auth_group_form = function(){
-        var parameters = MainThis.getPamameters();
-        if("edit" in parameters){
 
-            var auth_group = parameters.edit
-            for (var x in auth_group){
-                var id_input = "#input-"+x
-                var type_input = $(id_input).attr("type")
-                if(type_input == "text"){
-                    $(id_input).val(auth_group[x])
-                } else if (type_input == "checkbox"){
-                    if(auth_group[x]){
-                        $(id_input).attr('checked', 'checked')
-                    }  
+        var parameters = MainThis.getPamameters();
+        var id_auth_group = 0;
+        if(isNotEmpty(parameters)){
+            if("edit" in parameters){
+                var auth_group = parameters.edit
+                id_auth_group = auth_group.id
+                for (var x in auth_group){
+                    var id_input = "#input-"+x
+                    var type_input = $(id_input).attr("type")
+                    if(type_input == "text"){
+                        $(id_input).val(auth_group[x])
+                    } else if (type_input == "checkbox"){
+                        if(auth_group[x]){
+                            $(id_input).attr('checked', 'checked')
+                        }  
+                    }
                 }
-            }
-            $("#input-role").val(auth_group.role)
-            $("#input-description").val(auth_group.description)
-        };
+                $("#input-role").val(auth_group.role)
+                $("#input-description").val(auth_group.description)
+            };
+        }
+        MainThis.getCsrfToInput(
+            "auth_group",
+            "#input-csrf_token",
+            function(){
+                $("#form-auth_group").phanterwebFormValidator();
+            });
+        $("#auth_group-ajax-button-save")
+            .off("click.auth_group_form")
+            .on("click.auth_group_form", function(){
+                var formData = new FormData($("#form-auth_group")[0]);
+                var url_paremeters = "";
+                var function_send = MainThis.POST
+                if (id_auth_group!==0){
+                    var url_paremeters = "/"+id_auth_group;
+                    var function_send = MainThis.PUT
+
+                }
+                //formData.set("phantergallery_upload-input-file-profile", phanterGallery.phanterGalleryObjs[0].getCuttedImage())
+                function_send({url:"/api/admin/groups"+url_paremeters,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data){
+                        if(data.status=="OK"){
+                            if (id_auth_group!==0){
+                                M.toast({html: "Grupo editado com sucesso"})
+                                phanterpages.getDataPage("page_admin_auth_group_form")
+                            } else {
+                                phanterpages.getDataPage("page_admin_auth_group")
+                                M.toast({html: "Grupo criado com sucesso"})
+                            }
+                        } else if(data.status=="ERROR"){
+                            M.toast({html: data.message})
+                            if("csrf" in data){
+                                $("#input-csrf_token").val(data.csrf)
+                            }
+                        }
+                        $(".main-progress-bar").removeClass("enabled");
+                    },
+                    error: function(data){
+                        MainThis.getCsrfToInput(
+                            "auth_group",
+                            "#input-csrf_token",
+                            function(){
+                                $("#form-auth_group").phanterwebFormValidator();
+                            });
+                    },
+                });
+            });
 
     };
     MainThis.getCsrfCaptcha = function(cmd_option, token_captcha, group){
@@ -2787,20 +2812,12 @@ var PhanterPages = function(){
                         M.toast({html: data.message})
                         $(".progressbar-form-modal").removeClass("enabled");
                     }
-                },
-                error: function(data){
-                    M.toast({html: "Erro na conexão"})
-                    $(".progressbar-form-modal").removeClass("enabled");
-                    $(".main-progress-bar").removeClass("enabled");
-                    _print(data, "getCsrfCaptcha: "+remoteHostAddress+"/api/captcha")
-                },
+                }
             });
     };
     MainThis.getCaptcha = function(group){
-        $.ajax({url:remoteHostAddress+"/api/captcha",
-            type: "GET",
-            crossOrigin: true,
-            data: {"group":group},
+        phanterpages.getRemoteJson({
+            url:remoteHostAddress+"/api/captcha?group="+group,
             success: function(data){
                 if(data.status=="OK"){
                     $("#captcha-"+group+"-container").html(data.html)
@@ -2815,32 +2832,20 @@ var PhanterPages = function(){
                 } else if(data.status=="ERROR"){
                     M.toast({html: data.message})
                 }
-            },
-            headers:{
-                'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-                'Content-Type':'text/html; charset=utf-8',
-                'Authorization': sessionStorage.getItem("token")
-                },
-            error: function(data){
-                M.toast({html: "Erro na conexão"})
-                $(".progressbar-form-modal").removeClass("enabled");
-                $(".main-progress-bar").removeClass("enabled");
-                _print(data, "getCaptcha: "+remoteHostAddress+"/api/captcha")
-            },
-            dataType:"json"
+            }
         });
     };
     MainThis.getRemoteJson = function(parameters){
         var obj_param = parameters
         var url = remoteHostAddress+obj_param.url
-        _print(url);
+        _print(url, "getRemoteJson");
         $(".progressbar-form-modal").addClass("enabled");
         $(".main-progress-bar").addClass("enabled");
         $.ajax({url:url,
             type: "GET",
             crossOrigin: true,
             success: function(data){
-                _print(data, remoteHostAddress+obj_param.url);
+                _print(data, "getRemoteJson.URL: "+remoteHostAddress+obj_param.url);
                 $(".progressbar-form-modal").removeClass("enabled");
                 $(".main-progress-bar").removeClass("enabled");
                 if (data.status == "OK"){
@@ -2890,7 +2895,7 @@ var PhanterPages = function(){
             error: function(data){
                 $(".progressbar-form-modal").removeClass("enabled");
                 $(".main-progress-bar").removeClass("enabled");
-                _print(data, "getRemoteJson: "+remoteHostAddress+obj_param.url);
+                _print(data, "getRemoteJson.ERROR: "+remoteHostAddress+obj_param.url);
                 if ("error" in obj_param){
                     obj_param.error(data);
                 } else {
@@ -2912,7 +2917,7 @@ var PhanterPages = function(){
         new_parameters.headers = {'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
             'Authorization': sessionStorage.getItem("token")}
         new_parameters.success = function(data){
-                _print(data, remoteHostAddress+obj_param.url);
+                _print(data, "MainThis.PUT: "+remoteHostAddress+obj_param.url);
                 $(".progressbar-form-modal").removeClass("enabled");
                 $(".main-progress-bar").removeClass("enabled");
                 if (data.status == "OK"){
@@ -2958,12 +2963,13 @@ var PhanterPages = function(){
                 };
             }
         new_parameters.error = function(data){
-                M.toast({html: "Erro na conexão"})
                 $(".progressbar-form-modal").removeClass("enabled");
                 $(".main-progress-bar").removeClass("enabled");
-                _print(data, "POST: "+remoteHostAddress+obj_param.url);
+                _print(data, "MainThis.PUT.error: "+remoteHostAddress+obj_param.url);
                 if ("error" in obj_param){
                     obj_param.error(data);
+                } else {
+                    M.toast({html: "Erro na conexão"})
                 }
             }
         $(".progressbar-form-modal").addClass("enabled");
@@ -2989,7 +2995,7 @@ var PhanterPages = function(){
         new_parameters.headers = {'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
                     'Authorization': sessionStorage.getItem("token")}
         new_parameters.success = function(data){
-                _print(data, remoteHostAddress+obj_param.url);
+                _print(data, "MainThis.POST: "+remoteHostAddress+obj_param.url);
                 $(".progressbar-form-modal").removeClass("enabled");
                 $(".main-progress-bar").removeClass("enabled");
                 if (data.status == "OK"){
@@ -3035,12 +3041,13 @@ var PhanterPages = function(){
                 };
             }
         new_parameters.error = function(data){
-                M.toast({html: "Erro na conexão"})
                 $(".progressbar-form-modal").removeClass("enabled");
                 $(".main-progress-bar").removeClass("enabled");
-                _print(data, "POST: "+remoteHostAddress+obj_param.url);
+                _print(data, "MainThis.POST.error: "+remoteHostAddress+obj_param.url);
                 if ("error" in obj_param){
                     obj_param.error(data);
+                } else {
+                    M.toast({html: "Erro na conexão"})
                 }
             }
         $(".progressbar-form-modal").addClass("enabled");
@@ -3197,15 +3204,12 @@ var PhanterPages = function(){
                         has_authorization = true
                     }
                 }
-                _print("O usuário tem autorização? "+has_authorization)
                 if(has_authorization){
                     $("#main-container").html(html);
                     ajustar_imagem();
                     links_href();
                     ComponenteMenu.init()
                 } else {
-                    _print("Não tem autorização, então vai um warning")
-                    _print(page_obj, "Será que tem parâmetros")
                     temp_parameters = sessionStorage.getItem("currentPage");
                     MainThis.getDataPage("page_warning", {
                         'message':'Não tem autorização para acessar este recurso',
@@ -3221,7 +3225,6 @@ var PhanterPages = function(){
             }
             if("buttons" in page_obj){
                 var buttons = page_obj.buttons
-                _print(buttons, 'Lista de botoes')
                 var botoes_atuais = []
                 $(".phanterwebbuttonpack").each(function(){
                     var value = $(this).attr("id")
@@ -3235,8 +3238,6 @@ var PhanterPages = function(){
                     var buttons_to_put = []
                     for (var x in buttons) {
                         var key_value = x
-                        _print(key_value, 'usuário dos botões')
-                        _print(buttons[key_value], 'seus botões')
                         if(roles.indexOf(key_value)>-1){
                             for (var i = 0; i < buttons[key_value].length; i++) {
                                 var button = buttons[key_value][i]
@@ -3250,11 +3251,6 @@ var PhanterPages = function(){
                     for (var i = 0; i < deletar_botao.length; i++) {
                         MainThis.removeButtonPack(deletar_botao[i])
                     }
-                    _print(botoes_atuais, "Botões que estão")
-                    _print(buttons_to_put, "Botões solicitados")
-                    _print(deletar_botao, "Deletar os botões")
-                    _print(arrayA_minus_arrayB(buttons_to_put, arrayA_minus_arrayB(botoes_atuais, deletar_botao)), "Botões que serão adicionados")
-                    _print(arrayA_minus_arrayB(botoes_atuais, deletar_botao), "Botões que não serão mexidos")
                     var botoes_fixos = arrayA_minus_arrayB(botoes_atuais, deletar_botao)
                     if("active_buttons" in page_obj){
                         for (var i = 0; i < botoes_fixos.length; i++) {
@@ -3419,10 +3415,6 @@ var PhanterPages = function(){
                                     }
                                     getPage(page_obj, data)
                                 }
-                            },
-                            error:function(data){
-                                _print(data, "getRemoteJson \"/api/users\": Erro ao tentar capturar JSON")
-
                             }
                         });
                     };
@@ -3451,26 +3443,6 @@ var PhanterPages = function(){
             });
         }
     };
-    MainThis.getDataPageToTarget = function(pagina, target, onsucess){
-        $.ajax({url:pagina,
-            type: "GET",
-            crossOrigin: true,
-            success: function(data){
-                MainThis.currentPage = pagina;
-                $(target).html(data);
-                onsucess();
-            },
-            headers:{
-                    'Cache-Control':'no-store, must-revalidate, no-cache, max-age=0',
-            },
-            error: function(data){
-                M.toast({html: "Erro na conexão"})
-                $(".progressbar-form-modal").removeClass("enabled");
-                $(".main-progress-bar").removeClass("enabled");
-                _print(data, "getDataPageToTarget"+remoteHostAddress+"/api/user/active-code")
-            },
-        });
-    };
     MainThis.getCsrfToInput = function(proposito, inputalvo, callback){
         $.ajax({url:remoteHostAddress+"/api/csrf?proposito="+proposito,
             type: "GET",
@@ -3493,7 +3465,7 @@ var PhanterPages = function(){
                 M.toast({html: "Erro na conexão"})
                 $(".progressbar-form-modal").removeClass("enabled");
                 $(".main-progress-bar").removeClass("enabled");
-                _print(data, "getCsrfToInput: "+remoteHostAddress+"/api/csrf?proposito="+proposito);
+                _print(data, "getCsrfToInput.GET.error: "+remoteHostAddress+"/api/csrf?proposito="+proposito);
             },
             dataType:"json",
         });        
