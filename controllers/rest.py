@@ -143,9 +143,7 @@ def requires_login(
                 if usuario:
                     ultima_data = usuario.rest_date
                     periodo = datetime.now() - ultima_data
-                    app.logger.debug(periodo.seconds)
                     if (periodo.seconds > 0) and (periodo.seconds < app.config['DEFAULT_TIME_TOKEN_EXPIRES']):
-                        app.logger.debug("veio aqui")
                         new_token = usuario.token
                         usuario = User(token=new_token)
                         if usuario.activated:
@@ -236,10 +234,8 @@ def requires_csrf(
             authorization_error = ErrorLog()
             parser.add_argument('csrf_token', location='form')
             args = parser.parse_args()
-            app.logger.debug(args['csrf_token'])
             csrf = CSRF()
             is_valid = csrf.valid_response_token(args['csrf_token'])
-            app.logger.debug(is_valid)
             proposito = "publico"
             if intention_csrf:
                 proposito = intention_csrf
@@ -261,8 +257,6 @@ def requires_csrf(
                 }
             else:
                 proposito = is_valid['proposito']
-                app.logger.debug("proposito eh igual a intenção?")
-                app.logger.debug(proposito != intention_csrf)
                 if proposito != intention_csrf:
                     frameinfo = getframeinfo(currentframe())
                     authorization_error.error(
@@ -369,7 +363,6 @@ def process_checkbox(value):
         return True
     else:
         return False
-
 
 def process_intenger(value):
     try:
@@ -721,7 +714,6 @@ class RestImageUser(Resource):
                 "user.png"
             )
 
-
 class RestUsers(Resource):
 
     @requires_login()
@@ -849,7 +841,6 @@ class RestUsers(Resource):
 
     @requires_login(check_csrf=True, intention_csrf="profile", defid="RestUsers.put")
     def put(self, *args, **kargs):
-        token = kargs['token']
         usuario = kargs['usuario']
         csrf_token = kargs['new_csrf_token']
         parser.add_argument('email')
@@ -1024,6 +1015,41 @@ class RestAdminGroups(Resource):
         authorized_roles=['root'],
         check_csrf=True,
         intention_csrf="auth_group",
+        defid="RestAdminGroups.post")
+    def post(self, *args, **kargs):
+        csrf_token = kargs['new_csrf_token']
+        parser.add_argument('role')
+        parser.add_argument('description')
+        args = parser.parse_args()
+        role = args['role']
+        description = args['description']
+        validate = ValidateReqArgs(args)
+        validate.isNotEmpty("role", "O nome não pode ser vazio.")
+        if validate.anyError:
+            return {
+                'status': 'ERROR',
+                'message': 'Erros nos dados enviados!',
+                'csrf': csrf_token,
+                'validators': validate.validators
+            }
+        id_auth_group = db.auth_group.insert(role=role,
+            description=description)
+        if id_auth_group:
+            db.commit()
+            return {'status': 'OK',
+                'message': 'Auth group created',
+                'auth_group': {
+                    'id': id_auth_group,
+                    'role': role,
+                    'description': description}}
+        else:
+            return {'status': 'ERROR',
+                'message': 'Erro in edit auth group'}
+
+    @requires_login(
+        authorized_roles=['root'],
+        check_csrf=True,
+        intention_csrf="auth_group",
         defid="RestAdminGroups.put")
     def put(self, *args, **kargs):
         id_auth_group = kargs["id_auth_group"]
@@ -1035,13 +1061,26 @@ class RestAdminGroups(Resource):
         description = args['description']
         validate = ValidateReqArgs(args)
         validate.isNotEmpty("role", "O nome não pode ser vazio.")
-        if True:
+        if validate.anyError:
             return {
                 'status': 'ERROR',
                 'message': 'Erros nos dados enviados!',
                 'csrf': csrf_token,
                 'validators': validate.validators
             }
+        q_group = db(db.auth_group.id == id_auth_group).select().first()
+        if q_group:
+            q_group.update_record(role=role,
+                description=description)
+            db.commit()
+            return {'status': 'OK',
+                'message': 'Auth group created',
+                'auth_group': {'id': id_auth_group,
+                    'role': role,
+                    'description': description}}
+        else:
+            return {'status': 'ERROR',
+                'message': 'Erro in create auth group'}
 
 
 class RestAdminImageUser(Resource):
@@ -1286,7 +1325,6 @@ class RestAuthenticater(Resource):
         validate.isNotEmpty("email", "O email não pode ser vazio.")
         validate.isEmail("email", "O email é inválido.")
         validate.isNotEmpty("password", "A senha não pode ser vazia.")
-        app.logger.debug(validate.anyError)
         csrf_token = kargs['new_csrf_token']
 
         if validate.anyError:
@@ -1466,4 +1504,4 @@ api.add_resource(RestServerInfo, '/api/server')
 api.add_resource(RestAuthenticater, '/api/authenticater')
 api.add_resource(RestAdminImageUser, '/api/auth_user/image/<autorization>')
 api.add_resource(RestAdminUsers, '/api/admin/users', '/api/admin/users/<id_auth_user>')
-api.add_resource(RestAdminGroups, '/api/admin/groups', '/api/admin/users/<id_auth_user>')
+api.add_resource(RestAdminGroups, '/api/admin/groups', '/api/admin/groups/<id_auth_group>')
