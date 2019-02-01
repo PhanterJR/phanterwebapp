@@ -1906,6 +1906,9 @@ var PhanterTables = function(table_name, data){
             };
             $(MainThis.t_html).append(html_r)
         };
+        if(cont==0){
+            $(MainThis.t_html).append("<tr><th class=\"espera_container\">\"Não há registros\"</th></tr>")
+        }
     };
     MainThis._setField = function(){
         var html_r = $('<tr id="phantertables-row-head-'+MainThis.table_name+'" class="phantertables-row-head phantertables-row"></tr>')
@@ -2790,30 +2793,29 @@ var PhanterPages = function(){
                     },
                 });
             });
-
     };
     MainThis.getCsrfCaptcha = function(cmd_option, token_captcha, group){
-            var html = JSON.parse(phanterwebCacheDataJS.components.component_preloader_circle_big)
-            $("#captcha-"+group+"-container").html(html)
-            MainThis.POST({url:"/api/captcha",
-                data: {"cmd_option":cmd_option,
-                       "token_captcha":token_captcha,
-                       "group":group
-                    },
-                success: function(data){
-                    if(data.status=="OK"){
-                        var csrf_token = data.csrf;
-                        $("input[name='csrf_token']").val(csrf_token);
-                        $(".progressbar-form-modal").removeClass("enabled");
-                        $("#captcha-"+group+"-container").html(data.html).fadeIn()
-                        $("#captcha-ok-svg-container-"+group).fadeIn();
-                    } else if(data.status=="ERROR"){
-                        MainThis.getCaptcha(group);
-                        M.toast({html: data.message})
-                        $(".progressbar-form-modal").removeClass("enabled");
-                    }
+        var html = JSON.parse(phanterwebCacheDataJS.components.component_preloader_circle_big)
+        $("#captcha-"+group+"-container").html(html)
+        MainThis.POST({url:"/api/captcha",
+            data: {"cmd_option":cmd_option,
+                   "token_captcha":token_captcha,
+                   "group":group
+                },
+            success: function(data){
+                if(data.status=="OK"){
+                    var csrf_token = data.csrf;
+                    $("input[name='csrf_token']").val(csrf_token);
+                    $(".progressbar-form-modal").removeClass("enabled");
+                    $("#captcha-"+group+"-container").html(data.html).fadeIn()
+                    $("#captcha-ok-svg-container-"+group).fadeIn();
+                } else if(data.status=="ERROR"){
+                    MainThis.getCaptcha(group);
+                    M.toast({html: data.message})
+                    $(".progressbar-form-modal").removeClass("enabled");
                 }
-            });
+            }
+        });
     };
     MainThis.getCaptcha = function(group){
         phanterpages.getRemoteJson({

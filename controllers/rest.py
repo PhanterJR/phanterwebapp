@@ -364,6 +364,7 @@ def process_checkbox(value):
     else:
         return False
 
+
 def process_intenger(value):
     try:
         value = int(value)
@@ -380,7 +381,6 @@ def process_intenger(value):
                 "\nmessage: O valor não pode ser convertido para inteiro"
             ])
         )
-
         return 0
 
 
