@@ -2817,7 +2817,7 @@ var PhanterPages = function(){
     };
     MainThis.getCaptcha = function(group){
         phanterpages.getRemoteJson({
-            url:remoteHostAddress+"/api/captcha?group="+group,
+            url:"/api/captcha?group="+group,
             success: function(data){
                 if(data.status=="OK"){
                     $("#captcha-"+group+"-container").html(data.html)
