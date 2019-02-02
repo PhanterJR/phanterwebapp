@@ -36,10 +36,10 @@ function setArray(arrayA){
     return new_array
 }
 function setArrays(arrayA, arrayB){
-    var new_array = setArray(arrayB)
-    for (var i = 0; i < arrayA.length; i++) {
-        if(arrayB.indexOf(arrayA[i])<0){
-            new_array.push(arrayA[i])
+    var new_array = setArray(arrayA)
+    for (var i = 0; i < arrayB.length; i++) {
+        if(arrayA.indexOf(arrayB[i])<0){
+            new_array.push(arrayB[i])
         }
     }
     return setArray(new_array)
@@ -345,28 +345,38 @@ function createStringArrayFromListObjData(listObjData){
 $.fn.phanterwebSelects = function(listobjselect, select_selecionado){
     var select_selecionado = (typeof select_selecionado !== 'undefined') ? select_selecionado : null;
     if(Array.isArray(listobjselect)){
+        var cont = 0;
         for (var i = 0; i < listobjselect.length; i++) {
-            var el_option= new Option(listobjselect[i], listobjselect[i]);
+            var el_option = new Option(listobjselect[i], listobjselect[i]);
+            var input_target = (typeof $(this).attr("target_input") !== 'undefined') ? $(this).attr("target_input") : null;
+            if((cont==0)&(select_selecionado===null)){
+                $("#"+input_target).val(listobjselect[i]);
+            }
             if(select_selecionado===listobjselect[i]){
                 $(el_option).attr("selected", "selected")
-                var input_target = (typeof $(this).attr("target_input") !== 'undefined') ? $(this).attr("target_input") : null;
                 if(input_target!==null){
                     $("#"+input_target).val(listobjselect[i]);
                 }
             }
             $(this).append(el_option);
+            cont++
         }
     } else if(typeof listobjselect === "object"){
+        var cont = 0;
         for (var x in listobjselect) {
-            var el_option= new Option(x, listobjselect[x]);
+            var el_option = new Option(x, listobjselect[x]);
+            var input_target = (typeof $(this).attr("target_input") !== 'undefined') ? $(this).attr("target_input") : null;
+            if((cont==0)&(select_selecionado===null)){
+                $("#"+input_target).val(listobjselect[x]);
+            }
             if(select_selecionado===listobjselect[x]){
                 $(el_option).attr("selected", "selected")
-                var input_target = (typeof $(this).attr("target_input") !== 'undefined') ? $(this).attr("target_input") : null;
                 if(input_target!==null){
                     $("#"+input_target).val(listobjselect[x]);
                 }
             }
             $(this).append(el_option);
+            cont++
         }
     } else {
         console.error("The phanterwebSelects must the list or object")
@@ -2653,7 +2663,7 @@ var PhanterwebPages = function(){
                     $(this).attr('link_href', 'page_admin_auth_user_form')
                     $(this).attr('link_href_parameters', data_user)
                 })
-
+                PHANTERWEB.reload();
             }
         })
     };
@@ -2688,7 +2698,6 @@ var PhanterwebPages = function(){
                         t_group['chipname'] = auth_group[i].role
                         auth_group_chips.push(t_group)
                     }
-
                     $("#chips_auth_user").phanterwebChips(auth_group_chips);
                     PHANTERWEB.reload()
                 }
@@ -2753,7 +2762,6 @@ var PhanterwebPages = function(){
         })
     };
     MainThis.admin_auth_group_form = function(){
-
         var parameters = MainThis.getPamameters();
         var id_auth_group = 0;
         if(isNotEmpty(parameters)){
@@ -2790,7 +2798,6 @@ var PhanterwebPages = function(){
                 if (id_auth_group!==0){
                     var url_paremeters = "/"+id_auth_group;
                     var function_send = MainThis.PUT
-
                 }
                 //formData.set("phantergallery_upload-input-file-profile", phanterwebGallery.phanterwebGalleryObjs[0].getCuttedImage())
                 function_send({url:"/api/admin/groups"+url_paremeters,
