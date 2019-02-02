@@ -1004,7 +1004,7 @@ body.lock{
         transition: opacity 0.5s;
     }
 
-    .phantergallery_upload-image-button .phantersvg.upload-cloud {
+    .phantergallery_upload-image-button .phanterwebsvg.upload-cloud {
         font-size: 50px;
         color: red;
     }
@@ -1081,13 +1081,13 @@ body.lock{
         padding: 10px 36px 10px 36px;
         position: relative;
     }
-    .phantersvg.image-increase {
+    .phanterwebsvg.image-increase {
         position: absolute;
         right: 0;
         font-size: 30px;
         top: 10px;
     }
-    .phantersvg.image-decrease {
+    .phanterwebsvg.image-decrease {
         position: absolute;
         left: 0;
         font-size: 30px;
@@ -1109,11 +1109,11 @@ body.lock{
         left: 89px;
         position: absolute;
     }
-    .phantergallery_cutter-control .phantersvg {
+    .phantergallery_cutter-control .phanterwebsvg {
         font-size: 40px;
         cursor: pointer;
     }
-    .phantergallery_cutter-control .phantersvg:hover {
+    .phantergallery_cutter-control .phanterwebsvg:hover {
         fill:orange;
     }
     .phantergallery_cutter-control.actived {
@@ -1259,14 +1259,14 @@ body.lock{
 /*FIM PhanterGallery*/
 
 /*INICIO PhanterSvg*/
-    .phantersvg{
+    .phanterwebsvg{
         font-size: 1rem;
     }
-    .phantersvg svg {
+    .phanterwebsvg svg {
         width: 1em;
         height: 1em;
     }
-    .phantersvg-ico-layer0{
+    .phanterwebsvg-ico-layer0{
         fill: #212529;
     }
 /*FIM PhanterSvg*/
