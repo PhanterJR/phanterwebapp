@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from phanterweb.materialize import (
-    MaterializeButtonLeftMenu,
-    MaterializeButtonLeftMenuPlus
+    MaterializeButtonLeftMenu
 )
 
 from phanterweb.helpers import (
@@ -16,12 +15,5 @@ html = CONCATENATE(
         "local_library",
         _class="link_href",
         _link_href="page_admin_auth_user"
-    ),
-    MaterializeButtonLeftMenuPlus(
-        "add_admin_auth_user",
-        "New User",
-        "local_library",
-        _class="link_href",
-        _link_href="page_admin_auth_user_form"
     )
 )
