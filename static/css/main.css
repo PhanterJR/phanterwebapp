@@ -10,7 +10,7 @@ body.lock{
     background-color:#424141
 }
 .background-empresa {
-    background-image: url('/static-versioned/0.1.2/images/store.jpg');
+    background-image: url('/static-versioned/0.2.0/images/store.jpg');
     width: 100%;
     min-height: 500px;
     background-repeat: no-repeat;
@@ -1584,7 +1584,7 @@ body.lock{
         display: none;
     }
     .background-empresa {
-        background-image: url('/static-versioned/0.1.2/images/store.jpg');
+        background-image: url('/static-versioned/0.2.0/images/store.jpg');
         background-repeat: repeat;
         background-size: 100% auto;
     }
@@ -1597,7 +1597,7 @@ body.lock{
         display: none;
     }
     .background-empresa {
-        background-image: url('/static-versioned/0.1.2/images/store.jpg');
+        background-image: url('/static-versioned/0.2.0/images/store.jpg');
         background-repeat: repeat;
         background-size: 100% auto;
     }

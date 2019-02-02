@@ -1927,7 +1927,7 @@ var PhanterwebTables = function(table_name, data){
                 MainThis._setField();
             };
             cont++;
-            var html_r = $('<tr id="phanterwebtables-row-'+MainThis.table_name+'-'+lista[i].id+'" class="phanterwebtables-row" data-'+MainThis.table_name+'=\''+JSON.stringify(lista[i])+'\'"></tr>')
+            var html_r = $('<tr id="phanterwebtables-row-'+MainThis.table_name+'-'+lista[i].id+'" class="phanterwebtables-row" data-'+MainThis.table_name+'=\''+JSON.stringify(lista[i])+'\'></tr>')
             for (var x in MainThis.fields) {
                 var html_f = $('<td id="phanterwebtables-field-'+x+'-'+lista[i].id+'" class="phanterwebtables-field">'+lista[i][x]+'</td>')
                 $(html_r).append(html_f);
