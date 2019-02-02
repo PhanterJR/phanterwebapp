@@ -86,7 +86,7 @@ html = CONCATENATE(
         ),
     _class="phanterweb-container"),
     SCRIPTMINIFY(
-        "phanterpages.admin_auth_group_form();",
+        "phanterwebpages.admin_auth_group_form();",
         _type="text/javascript"
     ),
 )

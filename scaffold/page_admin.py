@@ -66,12 +66,12 @@ html = CONCATENATE(
             DIV(
                 DIV(
                     html_botoes,
-                    _class="phanterweb-card-container phanterpages-card_buttons-container"),
+                    _class="phanterweb-card-container phanterwebpages-card_buttons-container"),
                 _class="card"
             ),
             _class="new-container"
         ),
         _class="phanterweb-container"
     ),
-    SCRIPTMINIFY("phanterpages.admin();"),
+    SCRIPTMINIFY("phanterwebpages.admin();"),
 )

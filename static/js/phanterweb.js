@@ -264,15 +264,15 @@ function isEmail(email) {
 function isCNPJ(cnpj){
     var regex = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/
     return regex.test(cnpj)
-}
+};
 function isCPF(cpf){
     var regex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/
     return regex.test(cpf)
-}
+};
 function isCEP(cep){
     var regex = /^\d{2}\.\d{3}-\d{3}$/
     return regex.test(cep)
-}
+};
 function isDATE(date){
     var regex = /^\d{2}\/\d{2}\/\d{4}$/
     if(regex.test(date)){
@@ -316,18 +316,18 @@ function isDATE(date){
     }else {
         return false
     }
-}
+};
 function isACTIVATIONCODE(code){
     var regex = /^\d{5}/
     return regex.test(code)
-}
+};
 function convertArraysourceinInt(lista){
     var new_list = []
     for (var i = 0; i < lista.length; i++) {
         new_list.push(parseInt(lista[i]))
     }
     return new_list
-}
+};
 function createStringArrayFromListObjData(listObjData){
     var stringinput = "";
     var cont = 0;
@@ -340,7 +340,38 @@ function createStringArrayFromListObjData(listObjData){
         cont++
     }
     return stringinput
-}
+};
+//phnaterselects
+$.fn.phanterwebSelects = function(listobjselect, select_selecionado){
+    var select_selecionado = (typeof select_selecionado !== 'undefined') ? select_selecionado : null;
+    if(Array.isArray(listobjselect)){
+        for (var i = 0; i < listobjselect.length; i++) {
+            var el_option= new Option(listobjselect[i], listobjselect[i]);
+            if(select_selecionado===listobjselect[i]){
+                $(el_option).attr("selected", "selected")
+                var input_target = (typeof $(this).attr("target_input") !== 'undefined') ? $(this).attr("target_input") : null;
+                if(input_target!==null){
+                    $("#"+input_target).val(listobjselect[i]);
+                }
+            }
+            $(this).append(el_option);
+        }
+    } else if(typeof listobjselect === "object"){
+        for (var x in listobjselect) {
+            var el_option= new Option(x, listobjselect[x]);
+            if(select_selecionado===listobjselect[x]){
+                $(el_option).attr("selected", "selected")
+                var input_target = (typeof $(this).attr("target_input") !== 'undefined') ? $(this).attr("target_input") : null;
+                if(input_target!==null){
+                    $("#"+input_target).val(listobjselect[x]);
+                }
+            }
+            $(this).append(el_option);
+        }
+    } else {
+        console.error("The phanterwebSelects must the list or object")
+    }
+};
 //phanterchips
 $.fn.phanterwebChips = function(listobjchips) {
     var MainThis = this;
@@ -454,8 +485,8 @@ $.fn.phanterwebChips = function(listobjchips) {
     }
     this.init(listobjchips);
 };
-//phantermask
-$.fn.phanterMask = function(mask, parameters) {
+//phanterwebmask
+$.fn.phanterwebMask = function(mask, parameters) {
     var custom_mask = "";
     var casas_decimais = 2;
     var separador_decimal = ","
@@ -585,8 +616,8 @@ $.fn.phanterMask = function(mask, parameters) {
                 }
             }
             element
-                .off("keypress.phantermask")
-                .on("keypress.phantermask", function(event){
+                .off("keypress.phanterwebMask")
+                .on("keypress.phanterwebMask", function(event){
                     var code = event.keyCode || event.which;
                     var value = element.val();
                     if(reverse){
@@ -618,22 +649,22 @@ $.fn.phanterMask = function(mask, parameters) {
                 });
             
             element
-                .off("focusout.phantermask")
-                .on("focusout.phantermask", function(event){
+                .off("focusout.phanterwebMask")
+                .on("focusout.phanterwebMask", function(event){
                     var value = element.val();
                     var new_value = maskfunction(just_numbers(value));
                     element.val(new_value);
                 })
-                .off("paste.phantermask")
-                .on("paste.phantermask", function(event){
+                .off("paste.phanterwebMask")
+                .on("paste.phanterwebMask", function(event){
                     setTimeout(function () {
                         var value = element.val();
                         var new_value = maskfunction(just_numbers(value));
                         element.val(new_value);
                      }, 100);
                 })
-                .off("focusin.phantermask")
-                .on("focusin.phantermask", function(event){
+                .off("focusin.phanterwebMask")
+                .on("focusin.phanterwebMask", function(event){
                     var value = element.val();
                     var new_value = maskfunction(just_numbers(value));
                     element.val(new_value);
@@ -693,8 +724,8 @@ $.fn.phanterMask = function(mask, parameters) {
             element[0].selectionStart=-new_value.length;
             element[0].selectionEnd=-new_value.length;  
             element
-                .off('keypress.phantermask')
-                .on('keypress.phantermask', function(event){
+                .off('keypress.phanterwebMask')
+                .on('keypress.phanterwebMask', function(event){
                     var code = event.keyCode || event.which;
                     var value = element.attr("phantermaskTemp");
                     key_value = String.fromCharCode(code)
@@ -768,8 +799,8 @@ $.fn.phanterMask = function(mask, parameters) {
                         event.preventDefault();
                     }
                 })
-                .off('focusin.phantermask')
-                .on('focusin.phantermask', function(){
+                .off('focusin.phanterwebMask')
+                .on('focusin.phanterwebMask', function(){
                     var value = $(this).attr("phantermaskValue");
                     value = stringToFloatstringLimitDecimals(value, casas_decimais)
                     var new_value="";
@@ -797,15 +828,15 @@ $.fn.phanterMask = function(mask, parameters) {
                     element[0].selectionStart=-new_value.length;
                     element[0].selectionEnd=-new_value.length;  
                 })
-                .off("paste.phantermask")
-                .on("paste.phantermask", function(event){
+                .off("paste.phanterwebMask")
+                .on("paste.phanterwebMask", function(event){
                     var othis = this;
                     setTimeout(function () {
                         $(othis).trigger("focusout");
                      }, 100);
                 })
-                .off('focusout.phantermask')
-                .on('focusout.phantermask', function(){
+                .off('focusout.phanterwebMask')
+                .on('focusout.phanterwebMask', function(){
                     var value = $(this).attr("phantermaskValue");
                     value = stringToFloatstringLimitDecimals(value, casas_decimais)
                     var new_value="";
@@ -847,8 +878,8 @@ $.fn.phanterMask = function(mask, parameters) {
         applyMask(this, phanterMaskCPF)
     } else if(mask=="date"){
         $(this)
-            .off('click.phantermaskdata focusin.phantermaskdata')
-            .on('click.phantermaskdata focusin.phantermaskdata', function(){
+            .off('click.phanterwebMaskdata focusin.phanterwebMaskdata')
+            .on('click.phanterwebMaskdata focusin.phanterwebMaskdata', function(){
                 var dateativa = $(this).attr("phanterwebdateanddatetime");
                 if (dateativa === undefined) {
                     Calendar.setup({
@@ -864,8 +895,8 @@ $.fn.phanterMask = function(mask, parameters) {
         applyMask(this, phanterMaskDate)
     } else if(mask=="datetime"){
         $(this)
-            .off('click.phantermaskdatahora focusin.phantermaskdatahora')
-            .on('click.phantermaskdatahora focusin.phantermaskdatahora', function(){
+            .off('click.phanterwebMaskdatahora focusin.phanterwebMaskdatahora')
+            .on('click.phanterwebMaskdatahora focusin.phanterwebMaskdatahora', function(){
                 var dateativa = $(this).attr("phanterwebdateanddatetime");
                 if (dateativa === undefined) {
                     Calendar.setup({
@@ -889,7 +920,7 @@ $.fn.phanterMask = function(mask, parameters) {
         $(this).addClass("masked_input")
         phanterDecimals(this)
     } else if(mask=="off"){
-        $(this).removeClass("masked_input").off("keypress.phantermask focusout.phantermask focusin.phantermask")
+        $(this).removeClass("masked_input").off("keypress.phanterwebMask focusout.phanterwebMask focusin.phanterwebMask")
     } else if(mask=="custom"){
         $(this).addClass("masked_input")
         applyMask(this, phanterMaskCustom)
@@ -1094,8 +1125,8 @@ function check_application(){
     }
 };
 check_application();
-//phanterquery
-var phanterQuery = function(seletor){
+//phanterwebQuery
+var phanterwebQuery = function(seletor){
     var cm_car=['.', '\\', '#', '*', ',', '>', '+', '~', '[', ']', '=', '|', '^', '"', '$', ':', '(', ')'];
     
     var isID = seletor.startsWith("#");
@@ -1149,16 +1180,16 @@ var phanterQuery = function(seletor){
             elements = result       
         }
     }
-    var phanterQueryElements=[]
+    var phanterwebQueryElements=[]
     if (elements!=undefined){
         for (var i = 0; i < elements.length; i++) {
-            phanterQueryElements.push(elements[i])
+            phanterwebQueryElements.push(elements[i])
         }
     }
     var obj_result={
-        0:phanterQueryElements, 
+        0:phanterwebQueryElements, 
         seletor:seletor, 
-        length:phanterQueryElements.length,
+        length:phanterwebQueryElements.length,
         on: function(comand, callback){
             for (var i = 0; i < this.length; i++) {
                 var el=this[0][i];
@@ -1214,7 +1245,7 @@ var phanterQuery = function(seletor){
     return obj_result
 };
 //phantersvg
-var phanterSvgs = new (function() {
+var phanterwebSvgs = new (function() {
     this.icons={
         'close-circle': '<svg style="clip-rule:evenodd;fill-rule:evenodd;image-rendering:optimizeQuality;shape-rendering:geometricPrecision;text-rendering:geometricPrecision" version="1.1" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg"><path id="phantersvg-ico-close-circle" class="phantersvg-ico-layer0" d="m24.948 0.70545c13.443 0 24.346 10.903 24.346 24.346 0 13.443-10.903 24.346-24.346 24.346-13.443 0-24.346-10.903-24.346-24.346 0-13.443 10.903-24.346 24.346-24.346zm-17.228 14.689 7.571-7.571 9.6569 9.6569 9.6569-9.6569 7.571 7.571-9.6569 9.6569 9.6569 9.6569-7.571 7.571-9.6569-9.6569-9.6569 9.6569-7.571-7.571 9.6569-9.6569z"/></svg>',
         'download-cloud': '<svg style="clip-rule:evenodd;fill-rule:evenodd;image-rendering:optimizeQuality;shape-rendering:geometricPrecision;text-rendering:geometricPrecision" version="1.1" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg"><path id="phantersvg-ico-download-cloud" class="phantersvg-ico-layer0" d="m37.606 31.561c6.7342-1.0923 11.822-6.0609 11.822-12.024 0-6.7636-6.5432-12.248-14.612-12.248-0.3496 0-0.69686 0.011655-1.0403 0.031807-2.1429-4.0181-6.9525-6.8202-12.542-6.8202-7.5831 0-13.732 5.1546-13.732 11.511 0 1.0705 0.17615 2.108 0.50285 3.0916-4.2788 0.96187-7.4309 4.2346-7.4309 8.124 0 4.2144 3.7004 7.7064 8.5255 8.3171 0.876 0.1103 2.1379 0.10286 3.4031-0.02648l-1.8812-2.5083h7.225v-8.5992h14.45v8.5992h7.225l-1.9141 2.5522zm-7.9704-8.4919v8.5992h4.5656l-9.1308 12.175-9.1311-12.175h4.5656v-8.5992h9.1312-4.1e-4zm-14.45 20.774h2.6595v3.0372h14.45v-3.0372h2.6595v5.6569h-19.769v-5.6569z"/></svg>',
@@ -1243,55 +1274,55 @@ var phanterSvgs = new (function() {
         if (hasName){
             return ".phantersvg."+name
         } else {
-            throw "phantersvgs: there is no icon named '"+name+"'"
+            throw "phanterwebSvgs: there is no icon named '"+name+"'"
         };
     };
     this.update=function(){
         for (var key in this.icons) {
-            phanterQuery(".phantersvg."+key).html(this.icons[key])
+            phanterwebQuery(".phantersvg."+key).html(this.icons[key])
         };  
     }
     this.update()
 })();
 //phantergallery
-var phanterGalleryObj = function(elementPhanterGalleryObj, config, messages){
+var phanterwebGalleryObj = function(elementPhanterGalleryObj, config, messages){
     var MainObj = this
     MainObj.el = elementPhanterGalleryObj;
     MainObj.imageName = "";
     MainObj.imageType = "";
-    MainObj.uploadArea = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-object"));
-    MainObj.uploadFormContainer = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-upload-form-container"));
-    MainObj.uploadInput = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-upload-input"));
-    MainObj.panelCutterContainer = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-panel-cutter-container"));
-    MainObj.cutterShadow = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-shadow"));
-    MainObj.cutterControlClose = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-control-close"));
-    MainObj.cutterControlView = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-control-view"));
-    MainObj.cutterControlCut = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-control-cut"));
-    MainObj.cutterPad = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-pad"));
-    MainObj.cutterBackground = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-background"));
-    MainObj.cutterZoomControl = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-zoom-control"));
-    MainObj.panelCutterSizeContainer = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-panel-cutter-size-container"));
-    MainObj.panelCutterImage = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-panel-cutter-image"));
-    MainObj.targetView = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-target-view"));
-    MainObj.targetViewContainer = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-target-view-container"));
-    MainObj.imagecutedControlErase = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-imagecuted-control-erase"));
-    MainObj.imagecutedControlChange = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-imagecuted-control-change"));
-    MainObj.uploadMessages = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-upload-messages"));
-    MainObj.uploadAreaProgress = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-upload-area-progress"));
-    MainObj.uploadImageButton = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-upload-image-button"));
-    MainObj.uploadTitleButton = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-upload-title-button"));
-    MainObj.inputNameCutterSizeX = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-input-name-cutterSizeX"));
-    MainObj.inputNameCutterSizeY = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-input-name-cutterSizeY"));
-    MainObj.inputNamePositionX = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-input-name-positionX"));
-    MainObj.inputNamePositionY = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-input-name-positionY"));
-    MainObj.inputNameNewSizeX = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-input-name-newSizeX"));
-    MainObj.inputNameNewSizeY = phanterQuery("#"+elementPhanterGalleryObj.getAttribute("data-input-name-newSizeY"));
+    MainObj.uploadArea = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-object"));
+    MainObj.uploadFormContainer = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-upload-form-container"));
+    MainObj.uploadInput = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-upload-input"));
+    MainObj.panelCutterContainer = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-panel-cutter-container"));
+    MainObj.cutterShadow = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-shadow"));
+    MainObj.cutterControlClose = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-control-close"));
+    MainObj.cutterControlView = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-control-view"));
+    MainObj.cutterControlCut = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-control-cut"));
+    MainObj.cutterPad = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-pad"));
+    MainObj.cutterBackground = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-background"));
+    MainObj.cutterZoomControl = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-cutter-zoom-control"));
+    MainObj.panelCutterSizeContainer = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-panel-cutter-size-container"));
+    MainObj.panelCutterImage = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-panel-cutter-image"));
+    MainObj.targetView = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-target-view"));
+    MainObj.targetViewContainer = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-target-view-container"));
+    MainObj.imagecutedControlErase = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-imagecuted-control-erase"));
+    MainObj.imagecutedControlChange = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-imagecuted-control-change"));
+    MainObj.uploadMessages = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-upload-messages"));
+    MainObj.uploadAreaProgress = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-upload-area-progress"));
+    MainObj.uploadImageButton = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-upload-image-button"));
+    MainObj.uploadTitleButton = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-upload-title-button"));
+    MainObj.inputNameCutterSizeX = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-input-name-cutterSizeX"));
+    MainObj.inputNameCutterSizeY = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-input-name-cutterSizeY"));
+    MainObj.inputNamePositionX = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-input-name-positionX"));
+    MainObj.inputNamePositionY = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-input-name-positionY"));
+    MainObj.inputNameNewSizeX = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-input-name-newSizeX"));
+    MainObj.inputNameNewSizeY = phanterwebQuery("#"+elementPhanterGalleryObj.getAttribute("data-input-name-newSizeY"));
     MainObj.cutterSizeX = elementPhanterGalleryObj.getAttribute("data-cutter-size-x");
     MainObj.cutterSizeY = elementPhanterGalleryObj.getAttribute("data-cutter-size-y");
     MainObj.uploadSrcImg = elementPhanterGalleryObj.getAttribute("data-upload-src-img");
     MainObj.config = config;
     MainObj.messages = messages;
-    MainObj.phanterGalleryCutterObj = undefined;
+    MainObj.phanterwebGalleryCutterObj = undefined;
     MainObj.error = false;
     MainObj._callAfterCut = "";
     MainObj.cuttedImage = null;
@@ -1348,7 +1379,7 @@ var phanterGalleryObj = function(elementPhanterGalleryObj, config, messages){
                     MainObj.hideProgress()
                     reader.onloadend = function(){
                         var base64data = reader.result;
-                        MainObj.phanterGalleryCutterObj= new phanterGalleryCutterObj(base64data, MainObj)
+                        MainObj.phanterwebGalleryCutterObj= new phanterwebGalleryCutterObj(base64data, MainObj)
                         window.onresize = function(event){
                         }
                     }
@@ -1375,7 +1406,7 @@ var phanterGalleryObj = function(elementPhanterGalleryObj, config, messages){
     };
     return MainObj
 };
-var phanterGalleryCutterObj = function(base64data, PG){
+var phanterwebGalleryCutterObj = function(base64data, PG){
     var selfObj = this
     var PG=PG
     var base64data=base64data
@@ -1659,8 +1690,8 @@ var phanterGalleryCutterObj = function(base64data, PG){
     });
     return selfObj
 };
-var phanterGallery = new (function(){
-    this.phanterGalleryObjs=[]
+var phanterwebGallery = new (function(){
+    this.phanterwebGalleryObjs=[]
     this._config = {
             titleButton:"Upload Image",
             titleButtonSend:"Send Image",
@@ -1694,9 +1725,9 @@ var phanterGallery = new (function(){
     };
     this.update = function(init){
         if (init===false){
-            var elements = phanterQuery(".phantergallery_object")[0];
+            var elements = phanterwebQuery(".phantergallery_object")[0];
                 for (var i = 0; i < elements.length; i++) {
-                    var PG = new phanterGalleryObj(elements[i], this._config, this._messages)
+                    var PG = new phanterwebGalleryObj(elements[i], this._config, this._messages)
                     if(PG.uploadSrcImg!=""){
                         var img = new Image;
                         img.src = PG.uploadSrcImg
@@ -1716,17 +1747,17 @@ var phanterGallery = new (function(){
                             });
                         }
                     }
-                    var objArray = this.phanterGalleryObjs
+                    var objArray = this.phanterwebGalleryObjs
                     objArray.push(PG);
                 }
         } else {
-            var elements = phanterQuery(".phantergallery_object")[0];
+            var elements = phanterwebQuery(".phantergallery_object")[0];
                 for (var i = 0; i < elements.length; i++) {
-                    var PG = new phanterGalleryObj(elements[i], this._config, this._messages)
+                    var PG = new phanterwebGalleryObj(elements[i], this._config, this._messages)
                     PG._callAfterCut = this._callAfterCut
                     PG.setImgButton(this._config.imgButton)
                     PG.setTitleButton(this._config.titleButton)
-                    phanterSvgs.update()
+                    phanterwebSvgs.update()
                     if(PG.uploadSrcImg!=""){
                         var img = new Image;
                         img.src = PG.uploadSrcImg
@@ -1748,7 +1779,7 @@ var phanterGallery = new (function(){
                             });
                         }
                     }
-                    var objArray = this.phanterGalleryObjs
+                    var objArray = this.phanterwebGalleryObjs
                     objArray.push(PG);
                 }
         }
@@ -1756,7 +1787,7 @@ var phanterGallery = new (function(){
     this.update(true)
     return this
 })();
-var phanterGalleryAjaxObj = function(url, objectToSend, callback){
+var phanterwebGalleryAjaxObj = function(url, objectToSend, callback){
     var xhttp;
     xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -1785,7 +1816,7 @@ function ajustar_imagem(){
 
 $(window).on('resize', function(){ajustar_imagem()})
 
-var ComponenteMenu = new function(){
+var phanterwebComponenteMenu = new function(){
     var MainThis = this
     this.toggleMenu = function(){
         if($("#left-bar").hasClass("expanded")){
@@ -1859,22 +1890,22 @@ var ComponenteMenu = new function(){
         this.actionBtnMenuCmdSubMenu()
     }
 }();
-var PhanterTables = function(table_name, data){
+var PhanterwebTables = function(table_name, data){
     var MainThis = this;
     MainThis.map_search_bar = JSON.parse(phanterwebCacheDataJS.maps.map_search_bar)
     MainThis.map_search_bar = MainThis.map_search_bar.split("§table_name§").join(table_name)
     MainThis.table_name = table_name;
     MainThis.fields = data.fields;
-    MainThis.t_html = $('<table id="'+table_name+'" class="phantertables"></table>')
+    MainThis.t_html = $('<table id="'+table_name+'" class="phanterwebtables"></table>')
     MainThis.html = ""
     MainThis.data = data
-    MainThis.menu = '<td class="phantertables-field phantertables-field-menu-td">\
-            <span class="dropdown-trigger link phantertables-menu-button" data-target="dropdown_'+table_name+'_§id_name§">\
+    MainThis.menu = '<td class="phanterwebtables-field phanterwebtables-field-menu-td">\
+            <span class="dropdown-trigger link phanterwebtables-menu-button" data-target="dropdown_'+table_name+'_§id_name§">\
                 <i class="material-icons">more_vert</i>\
             </span>\
-            <ul id="dropdown_'+table_name+'_§id_name§" class="dropdown-content phantertables-menu-container">§menu_itens§</ul>\
+            <ul id="dropdown_'+table_name+'_§id_name§" class="dropdown-content phanterwebtables-menu-container">§menu_itens§</ul>\
         </td>'
-    MainThis.menu_li = '<li><span id="phantertables-menu-item_'+table_name+'_§id_name§_§id_submenu_name§" class="phantertables-menu-item phantertables-menu-item_§id_submenu_name§" data-source="phantertables-row-'+table_name+'-§id_name§">§label§</span></li>'
+    MainThis.menu_li = '<li><span id="phanterwebtables-menu-item_'+table_name+'_§id_name§_§id_submenu_name§" class="phanterwebtables-menu-item phanterwebtables-menu-item_§id_submenu_name§" data-source="phanterwebtables-row-'+table_name+'-§id_name§">§label§</span></li>'
     MainThis.menuButtons = null;
     MainThis.fieldsSearch = null;
     MainThis._setList = function() {
@@ -1886,9 +1917,9 @@ var PhanterTables = function(table_name, data){
                 MainThis._setField();
             };
             cont++;
-            var html_r = $('<tr id="phantertables-row-'+MainThis.table_name+'-'+lista[i].id+'" class="phantertables-row" data-'+MainThis.table_name+'=\''+JSON.stringify(lista[i])+'\'"></tr>')
+            var html_r = $('<tr id="phanterwebtables-row-'+MainThis.table_name+'-'+lista[i].id+'" class="phanterwebtables-row" data-'+MainThis.table_name+'=\''+JSON.stringify(lista[i])+'\'"></tr>')
             for (var x in MainThis.fields) {
-                var html_f = $('<td id="phantertables-field-'+x+'-'+lista[i].id+'" class="phantertables-field">'+lista[i][x]+'</td>')
+                var html_f = $('<td id="phanterwebtables-field-'+x+'-'+lista[i].id+'" class="phanterwebtables-field">'+lista[i][x]+'</td>')
                 $(html_r).append(html_f);
             }
             if (MainThis.menuButtons!==null) {
@@ -1911,9 +1942,9 @@ var PhanterTables = function(table_name, data){
         }
     };
     MainThis._setField = function(){
-        var html_r = $('<tr id="phantertables-row-head-'+MainThis.table_name+'" class="phantertables-row-head phantertables-row"></tr>')
+        var html_r = $('<tr id="phanterwebtables-row-head-'+MainThis.table_name+'" class="phanterwebtables-row-head phanterwebtables-row"></tr>')
         for (var x in MainThis.fields) {
-            var html_f = $('<th id="phantertables-field-'+x+'" class="phantertables-field">'+MainThis.fields[x]+'</th>')
+            var html_f = $('<th id="phanterwebtables-field-'+x+'" class="phanterwebtables-field">'+MainThis.fields[x]+'</th>')
             $(html_r).append(html_f);
         }
         if (MainThis.menuButtons!==null) {
@@ -1931,7 +1962,7 @@ var PhanterTables = function(table_name, data){
         MainThis._setList();
 
         MainThis.map_search_bar = $(MainThis.map_search_bar)
-        MainThis.map_search_bar.find("#phantertable-table-container-"+table_name).html(MainThis.t_html)
+        MainThis.map_search_bar.find("#phanterwebtable-table-container-"+table_name).html(MainThis.t_html)
         MainThis.html = MainThis.map_search_bar
         if (MainThis.fieldsSearch===null){
             cont=0
@@ -1958,7 +1989,7 @@ var PhanterTables = function(table_name, data){
         return $(MainThis.html)
     }
 };
-var PhanterPages = function(){
+var PhanterwebPages = function(){
     var MainThis = this
     MainThis.id_user = "";
     MainThis.token = "";
@@ -2065,9 +2096,9 @@ var PhanterPages = function(){
                         }));
                         sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
                         if(data.temporary_password){
-                            phanterpages.getDataPage("page_change_password", {'aviso':'A senha temporária irá expirar, utilize-a como senha atual para adicionar uma nova senha.'})
+                            MainThis.getDataPage("page_change_password", {'aviso':'A senha temporária irá expirar, utilize-a como senha atual para adicionar uma nova senha.'})
                         }else{
-                            phanterpages.reload();
+                            MainThis.reload();
                         }
                     } else if(data.status=="ERROR"){
                         $("#form-login-input-csrf_token").val("")
@@ -2226,7 +2257,7 @@ var PhanterPages = function(){
                                             "email":data.auth_user.email
                                         }));
                                         sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
-                                        phanterpages.reload();
+                                        MainThis.reload();
                                     } else if(data.status=="ERROR"){
                                         M.toast({html: data.message})
                                         MainThis.responseValidator(data)
@@ -2303,7 +2334,7 @@ var PhanterPages = function(){
                                     if(data.status=="OK"){
                                         $("#modal_layout").modal("close");
                                         M.toast({html: "Solicitação de nova senha enviada"});
-                                        phanterpages.principal()
+                                        MainThis.principal()
                                     } else if(data.status=="ERROR"){
                                         M.toast({html: data.message})
                                         MainThis.responseValidator(data)
@@ -2333,8 +2364,8 @@ var PhanterPages = function(){
         var html = JSON.parse(phanterwebCacheDataJS.components.component_user_phantergallery)
         $("#profile-image-user-container").html(html)
         $("#phantergallery_object-profile").attr("data-upload-src-img", img_src)
-        phanterSvgs.update()
-        phanterGallery.update(true)
+        phanterwebSvgs.update()
+        phanterwebGallery.update(true)
     };
     MainThis.warning = function(){
         var currentpage = JSON.parse(sessionStorage.getItem("currentPage"))
@@ -2384,7 +2415,7 @@ var PhanterPages = function(){
                                 });
                                 $(".main-progress-bar").addClass("enabled");
                                 var formData = new FormData($("#form-profile")[0]);
-                                //formData.set("phantergallery_upload-input-file-profile", phanterGallery.phanterGalleryObjs[0].getCuttedImage())
+                                //formData.set("phantergallery_upload-input-file-profile", phanterwebGallery.phanterwebGalleryObjs[0].getCuttedImage())
                                 MainThis.PUT({url:"/api/users",
                                     data: formData,
                                     processData: false,
@@ -2401,7 +2432,7 @@ var PhanterPages = function(){
                                             }));
                                             sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
                                             M.toast({html: "Perfil atualizado com sucesso!"})
-                                            phanterpages.reload()
+                                            MainThis.reload()
 
                                         } else if (data.status=="ATTENTION"){
                                             M.toast({html: data.message})
@@ -2429,7 +2460,7 @@ var PhanterPages = function(){
                                 });
                             });
                     } else {
-                        phanterpages.principal();
+                        MainThis.principal();
                     }
                 } else {
 
@@ -2481,7 +2512,7 @@ var PhanterPages = function(){
                             $("#form-lock-input-remember_me").attr("checked", "checked");
                         }
                     }
-                    ComponenteMenu.init();
+                    phanterwebComponenteMenu.init();
                     $("#alert-top").slideUp();
                     MainThis.getCsrfToInput(
                         "login",
@@ -2534,7 +2565,7 @@ var PhanterPages = function(){
                                                 "email":data.auth_user.email
                                             }));
                                             sessionStorage.setItem("loggedUser", JSON.stringify(data.auth_user));
-                                            phanterpages.reload();
+                                            MainThis.reload();
 
 
                                         } else if(data.status=="ERROR"){
@@ -2561,7 +2592,7 @@ var PhanterPages = function(){
         });  
     };
     MainThis.changePassword = function(){
-        var aviso = phanterpages.getPamameters()
+        var aviso = MainThis.getPamameters()
         if(isNotEmpty(aviso)){
             if("aviso" in aviso){
                 $("#aviso_change_password").text(aviso.aviso)
@@ -2586,7 +2617,7 @@ var PhanterPages = function(){
                     success: function(data){
                         if(data.status=="OK"){
                             M.toast({html: "Senha alterada com sucesso!"})
-                            phanterpages.getDataPage("page_profile")
+                            MainThis.getDataPage("page_profile")
                         } else if(data.status=="ERROR"){
                             M.toast({html: data.message})
                             if("csrf" in data){
@@ -2611,11 +2642,11 @@ var PhanterPages = function(){
     MainThis.admin_auth_user = function(){
         MainThis.getRemoteJson({url:"/api/admin/users",
             success: function(data){
-                var auth_user = new PhanterTables("auth_user", data)
+                var auth_user = new PhanterwebTables("auth_user", data)
                 auth_user.addMenu("editar", "Editar")
                 var html = auth_user.init()
                 $("#lista_auth_user").html(html)
-                $(".phantertables-menu-item_editar").each(function(){
+                $(".phanterwebtables-menu-item_editar").each(function(){
                     var source = $(this).attr("data-source")
                     var data_user = JSON.parse($("#"+source).attr("data-auth_user"))
                     data_user = JSON.stringify({'edit': data_user})
@@ -2643,11 +2674,11 @@ var PhanterPages = function(){
             }
             $("#phantergallery_object-auth_user").attr("data-upload-src-img", data_user.user_image)
             $("#input-chips-groups-auth_user").val(data_user.groups);
-            $("#input-activate_date_expire").phanterMask('datetime');
-            $("#input-rest_date").phanterMask('datetime');
-            $("#input-datetime_next_attempt_to_login").phanterMask('datetime');
-            $("#input-temporary_password_expire").phanterMask('datetime');
-            phanterpages.getRemoteJson({
+            $("#input-activate_date_expire").phanterwebMask('datetime');
+            $("#input-rest_date").phanterwebMask('datetime');
+            $("#input-datetime_next_attempt_to_login").phanterwebMask('datetime');
+            $("#input-temporary_password_expire").phanterwebMask('datetime');
+            MainThis.getRemoteJson({
                 url:'/api/admin/groups',
                 success: function(data){
                     var auth_group = data.auth_group;
@@ -2672,7 +2703,7 @@ var PhanterPages = function(){
                 .off("click.auth_user_form")
                 .on("click.auth_user_form", function(){
                     var formData = new FormData($("#form-auth_user")[0]);
-                    //formData.set("phantergallery_upload-input-file-profile", phanterGallery.phanterGalleryObjs[0].getCuttedImage())
+                    //formData.set("phantergallery_upload-input-file-profile", phanterwebGallery.phanterwebGalleryObjs[0].getCuttedImage())
                     MainThis.PUT({url:"/api/admin/users/"+data_user.id,
                         data: formData,
                         processData: false,
@@ -2681,7 +2712,7 @@ var PhanterPages = function(){
                             if(data.status=="OK"){
 
                                 M.toast({html: "Usuário editado com sucesso!"})
-                                phanterpages.getDataPage("page_admin_auth_user")
+                                MainThis.getDataPage("page_admin_auth_user")
 
                             } else if(data.status=="ERROR"){
                                 M.toast({html: data.message})
@@ -2706,11 +2737,11 @@ var PhanterPages = function(){
     MainThis.admin_groups = function(){
         MainThis.getRemoteJson({url:"/api/admin/groups",
             success: function(data){
-                var auth_group = new PhanterTables("auth_group", data)
+                var auth_group = new PhanterwebTables("auth_group", data)
                 auth_group.addMenu("editar", "Editar")
                 var html = auth_group.init()
                 $("#lista_auth_group").html(html)
-                $(".phantertables-menu-item_editar").each(function(){
+                $(".phanterwebtables-menu-item_editar").each(function(){
                     var source = $(this).attr("data-source")
                     var data_user = JSON.parse($("#"+source).attr("data-auth_group"))
                     data_user = JSON.stringify({'edit': data_user})
@@ -2761,7 +2792,7 @@ var PhanterPages = function(){
                     var function_send = MainThis.PUT
 
                 }
-                //formData.set("phantergallery_upload-input-file-profile", phanterGallery.phanterGalleryObjs[0].getCuttedImage())
+                //formData.set("phantergallery_upload-input-file-profile", phanterwebGallery.phanterwebGalleryObjs[0].getCuttedImage())
                 function_send({url:"/api/admin/groups"+url_paremeters,
                     data: formData,
                     processData: false,
@@ -2770,9 +2801,9 @@ var PhanterPages = function(){
                         if(data.status=="OK"){
                             if (id_auth_group!==0){
                                 M.toast({html: "Grupo editado com sucesso"})
-                                phanterpages.getDataPage("page_admin_auth_group_form")
+                                MainThis.getDataPage("page_admin_auth_group_form")
                             } else {
-                                phanterpages.getDataPage("page_admin_auth_group")
+                                MainThis.getDataPage("page_admin_auth_group")
                                 M.toast({html: "Grupo criado com sucesso"})
                             }
                         } else if(data.status=="ERROR"){
@@ -2818,7 +2849,7 @@ var PhanterPages = function(){
         });
     };
     MainThis.getCaptcha = function(group){
-        phanterpages.getRemoteJson({
+        MainThis.getRemoteJson({
             url:"/api/captcha?group="+group,
             success: function(data){
                 if(data.status=="OK"){
@@ -3102,10 +3133,10 @@ var PhanterPages = function(){
                     sessionStorage.removeItem('token');
                     sessionStorage.removeItem('loggedUser');
                     M.toast({html: "Volte sempre!"});
-                    phanterpages.principal();
+                    MainThis.principal();
                 });
             links_href();
-            ComponenteMenu.init();
+            phanterwebComponenteMenu.init();
         } else {
             console.error("Ao chamar o método 'addCmdLogged' deve-se colocar o argumento data na qual estão as informações do usuário")
         }
@@ -3144,7 +3175,7 @@ var PhanterPages = function(){
                 MainThis.openModalRequestPassword();
             });
         links_href();
-        ComponenteMenu.init();        
+        phanterwebComponenteMenu.init();        
     };
     MainThis.getDataPage = function(pagina, parameters){
         if(pagina=="page_lock"){
@@ -3210,7 +3241,7 @@ var PhanterPages = function(){
                     $("#main-container").html(html);
                     ajustar_imagem();
                     links_href();
-                    ComponenteMenu.init()
+                    phanterwebComponenteMenu.init()
                 } else {
                     temp_parameters = sessionStorage.getItem("currentPage");
                     MainThis.getDataPage("page_warning", {
@@ -3223,7 +3254,7 @@ var PhanterPages = function(){
                  $("#main-container").html(html);
                 ajustar_imagem();
                 links_href();
-                ComponenteMenu.init()
+                phanterwebComponenteMenu.init()
             }
             if("buttons" in page_obj){
                 var buttons = page_obj.buttons
@@ -3325,7 +3356,7 @@ var PhanterPages = function(){
                                             $("#alert-top").slideDown();
                                             $("#alert-top").addClass("enabled");
                                             $("#alert-top-activation").phanterwebFormValidator()
-                                            $("#input-code_activation").phanterMask('custom',{'mask':"#####"})
+                                            $("#input-code_activation").phanterwebMask('custom',{'mask':"#####"})
                                             M.updateTextFields();
                                             $("#input-code_activation").focus()
                                             $("#alert-top-activate")
@@ -3340,7 +3371,7 @@ var PhanterPages = function(){
                                                                 if(data.status=="OK"){
                                                                     $("#alert-top").slideUp();
                                                                     M.toast({html: "Conta ativada com sucesso!"});
-                                                                    phanterpages.principal();
+                                                                    MainThis.principal();
                                                                 } else if(data.status=="ERROR"){
                                                                     M.toast({html: data.message})
                                                                 $(".progressbar-form-modal").removeClass("enabled");
@@ -3432,7 +3463,7 @@ var PhanterPages = function(){
                 $("#main-container").html(html);
                 ajustar_imagem();
                 links_href();
-                ComponenteMenu.init()
+                phanterwebComponenteMenu.init()
 
                 $(".progressbar-form-modal").removeClass("enabled");
                 $(".main-progress-bar").removeClass("enabled");
@@ -3498,7 +3529,7 @@ var PhanterPages = function(){
             }
         }
         links_href();
-        ComponenteMenu.init();
+        phanterwebComponenteMenu.init();
     };
     MainThis.prependButtonPack = function(buttonpack, actived){
         var actived = (actived === true) ? actived : false;
@@ -3520,7 +3551,7 @@ var PhanterPages = function(){
             }
         }
         links_href();
-        ComponenteMenu.init();
+        phanterwebComponenteMenu.init();
     };
     MainThis.getPamameters = function(){
         var currentpage = JSON.parse(sessionStorage.getItem("currentPage"));
@@ -3560,7 +3591,7 @@ var PhanterPages = function(){
         sessionStorage.setItem("currentPage", JSON.stringify(currentpage));
     };
 };
-var phanterpages = new PhanterPages();
+var phanterwebpages = new PhanterwebPages();
 
 function links_href(){
     $("[link_href]")
@@ -3569,9 +3600,9 @@ function links_href(){
             var parameters = $(this).attr("link_href_parameters");
             if (isNotEmpty(parameters)){
                 parameters = JSON.parse(parameters);
-                phanterpages.getDataPage(url, parameters);
+                phanterwebpages.getDataPage(url, parameters);
             }else{
-                phanterpages.getDataPage(url);
+                phanterwebpages.getDataPage(url);
             }
             $("#left-bar").removeClass("expanded");
         });
@@ -3587,10 +3618,10 @@ var PHANTERWEB = function(parameters){
         //materializecss
         var target_page=JSON.parse(sessionStorage.getItem("currentPage"))
         if(isNotEmpty(target_page)){
-            phanterpages.getDataPage(target_page.page, target_page.parameters);
+            phanterwebpages.getDataPage(target_page.page, target_page.parameters);
 
         }else{
-            phanterpages.getDataPage("page_main");
+            phanterwebpages.getDataPage("page_main");
         };
         M.AutoInit();
         $(".materilize-button-show-hidde-input-new")
@@ -3616,7 +3647,7 @@ var PHANTERWEB = function(parameters){
         ajustar_imagem();
         links_href();
 
-        ComponenteMenu.init()
+        phanterwebComponenteMenu.init()
     }
     this.reload = function(){
         $(".materilize-button-show-hidde-input-new")
@@ -3653,9 +3684,9 @@ var PHANTERWEB = function(parameters){
         links_href();
         ajustar_imagem();
         links_href();
-        phanterSvgs.update()
-        phanterGallery.update(true)
-        ComponenteMenu.init()     
+        phanterwebSvgs.update()
+        phanterwebGallery.update(true)
+        phanterwebComponenteMenu.init()     
     }
     return this
 }();
@@ -3666,10 +3697,10 @@ $(document).ready(function(){
   inputClass: Hammer.SUPPORT_POINTER_EVENTS ? Hammer.PointerEventInput : Hammer.TouchInput
     }).on("swiperight.event_menu", function(ev){
             if((ev.gesture.center.x-ev.gesture.deltaX)<10){
-                ComponenteMenu.menuExpand();
+                phanterwebComponenteMenu.menuExpand();
             }
         }).on("tap.event_menu", function(){
-            ComponenteMenu.menuDecrease();
+            phanterwebComponenteMenu.menuDecrease();
         });
     window.onbeforeunload = function() { return "Your work will be lost."; };
 });

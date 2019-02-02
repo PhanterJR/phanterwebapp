@@ -45,7 +45,7 @@ body.lock{
     width: 100%;
     padding: 0px 20px;
 }
-.phanterpages-card_buttons-container{
+.phanterwebpages-card_buttons-container{
     padding: 50px;
 }
 .card_button {
@@ -1391,7 +1391,7 @@ body.lock{
     border: 1px solid #dadada;
     border-radius: 5px;
 }
-.phantertable-table-container {
+.phanterwebtable-table-container {
 
     overflow: auto;
     background-color: #f0f0f0;
@@ -1399,7 +1399,7 @@ body.lock{
     box-shadow: 0px 0px 7px grey inset;
 
 }
-.phantertables-field {
+.phanterwebtables-field {
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -1449,7 +1449,7 @@ body.lock{
     .phanterweb-materialize-button-form-container .btn{
         width: 100%;
     }
-    .phanterpages-card_buttons-container{
+    .phanterwebpages-card_buttons-container{
         padding: 5px;
     }
     .titulo_maincontainer {
@@ -1532,7 +1532,7 @@ body.lock{
     .phanterweb-materialize-button-form-container .btn{
         width: 100%;
     }
-    .phanterpages-card_buttons-container{
+    .phanterwebpages-card_buttons-container{
         padding: 5px;
     }
     .titulo_maincontainer {

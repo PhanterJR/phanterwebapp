@@ -15,12 +15,12 @@ html = CONCATENATE(
             DIV(
                 DIV(
                     DIV(_id="lista_auth_user", _class="simple-border"),
-                    _class="phanterweb-card-container phanterpages-card_buttons-container"),
+                    _class="phanterweb-card-container phanterwebpages-card_buttons-container"),
                 _class="card"
             ),
             _class="new-container"
         ),
         _class="phanterweb-container"
     ),
-    SCRIPTMINIFY("phanterpages.admin_auth_user();"),
+    SCRIPTMINIFY("phanterwebpages.admin_auth_user();"),
 )

@@ -29,5 +29,5 @@ html = CONCATENATE(
         ),
         _class="warnings-container container"
     ),
-    SCRIPTMINIFY("phanterpages.warning();")
+    SCRIPTMINIFY("phanterwebpages.warning();")
 )

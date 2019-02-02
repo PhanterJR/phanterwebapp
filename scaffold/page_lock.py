@@ -135,7 +135,7 @@ html = CONCATENATE(
         _class="container"
     ),
     SCRIPT(
-        "phanterpages.lock();",
+        "phanterwebpages.lock();",
         _type="text/javascript"
     ),
 )

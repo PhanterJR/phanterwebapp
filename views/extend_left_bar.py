@@ -8,5 +8,5 @@ html = FontawesomeButtonLeftMenu(
     "principal",
     "Principal",
     "fas fa-home",
-    _onclick="phanterpages.principal();"
+    _onclick="phanterwebpages.principal();"
 )

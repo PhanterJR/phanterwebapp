@@ -124,7 +124,7 @@ html = CONCATENATE(
         ),
     _class="phanterweb-container"),
     SCRIPTMINIFY(
-        "phanterpages.profile();",
+        "phanterwebpages.profile();",
         _type="text/javascript"
     ),
 )

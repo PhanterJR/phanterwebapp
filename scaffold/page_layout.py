@@ -94,7 +94,7 @@ html = HTML(
                         _class="logo-empresa-svg"
                     ),
                     _class="brand-logo link",
-                    _onclick="phanterpages.principal();"
+                    _onclick="phanterwebpages.principal();"
                 ),
                 UL(
                     LI(

@@ -351,7 +351,7 @@ html = CONCATENATE(
         zindex=2005
     ).just_cutter_panel,
     SCRIPTMINIFY(
-        "phanterpages.admin_auth_user_form();",
+        "phanterwebpages.admin_auth_user_form();",
         _type="text/javascript"
     ),
 )

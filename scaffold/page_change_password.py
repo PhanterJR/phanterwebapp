@@ -104,7 +104,7 @@ html = CONCATENATE(
         _class="phanterweb-container"
     ),
     SCRIPTMINIFY(
-        "phanterpages.changePassword();",
+        "phanterwebpages.changePassword();",
         _type="text/javascript"
     ),
 )
