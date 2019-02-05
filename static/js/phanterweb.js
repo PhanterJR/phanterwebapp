@@ -383,7 +383,8 @@ $.fn.phanterwebSelects = function(listobjselect, select_selecionado){
     }
 };
 //phanterchips
-$.fn.phanterwebChips = function(listobjchips) {
+$.fn.phanterwebChips = function(listobjchips, field_to_chip) {
+    var field_to_chip = (typeof field_to_chip !== 'undefined') ? field_to_chip : 'chipname';
     var MainThis = this;
     var Mainid = $(this).attr("id")
     MainThis.listobjchips = listobjchips;
@@ -427,11 +428,15 @@ $.fn.phanterwebChips = function(listobjchips) {
                 if(cont==0){
                     stringinput = new String(listas[i].id)
                 } else {
-                    stringinput = stringinput + "|"+listas[i].id
+                    if(isNotEmpty(stringinput)){
+                        stringinput = stringinput + "|"+listas[i].id
+                    } else {
+                        stringinput = listas[i].id
+                    }
                 }
                 not_empty=true;
                 els_enableds.push(listas[i])
-                var chip_obj = "<div id=\""+id_bj+"\" class=\"phanterwebchip phanterwebchip-"+inputname+" enabled waves-effect waves-light\" data-chip='"+JSON.stringify(listas[i])+"'>"+listas[i].chipname+"<i class=\"tiny material-icons clear-phanterwebchip\">clear</i></div>"
+                var chip_obj = "<div id=\""+id_bj+"\" class=\"phanterwebchip phanterwebchip-"+inputname+" enabled waves-effect waves-light\" data-chip='"+JSON.stringify(listas[i])+"'>"+listas[i][field_to_chip]+"<i class=\"tiny material-icons clear-phanterwebchip\">clear</i></div>"
                 $("#materialize-input-phanterwebformchips_"+inputname).append(chip_obj);
                 $("#"+id_bj).off('click.chips').on('click.chips', function(){
                     $("#"+id_bj).off('click.chips')
@@ -454,7 +459,7 @@ $.fn.phanterwebChips = function(listobjchips) {
                 });
             } else {
                 listas[i].enabled=false
-                var chip_obj = "<div id=\""+id_bj+"\" class=\"phanterwebchip phanterwebchip-"+inputname+" waves-effect waves-light\" data-chip='"+JSON.stringify(listas[i])+"'><i class=\"tiny material-icons add-phanterwebchip\">add</i>"+listas[i].chipname+"</div>"
+                var chip_obj = "<div id=\""+id_bj+"\" class=\"phanterwebchip phanterwebchip-"+inputname+" waves-effect waves-light\" data-chip='"+JSON.stringify(listas[i])+"'><i class=\"tiny material-icons add-phanterwebchip\">add</i>"+listas[i][field_to_chip]+"</div>"
                 $("#materialize-input-chips-options-"+inputname).append(chip_obj);
                 $("#"+id_bj).off('click.chips').on('click.chips', function(){
                     $("#"+id_bj).off('click.chips')
@@ -478,7 +483,7 @@ $.fn.phanterwebChips = function(listobjchips) {
             }
             cont++
         };
-        $("input[name='"+inputname+"']").val(stringinput);
+        $("input[name='"+inputname+"']").val(stringinput).trigger('change');
         if(not_empty){
             $("#"+Mainid).find("label").addClass("active")
             $("#materialize-input-phanterwebformchips_"+inputname)
