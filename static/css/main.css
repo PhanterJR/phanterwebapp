@@ -1404,8 +1404,11 @@ body.lock{
     text-overflow: ellipsis;
 }
 
-/*CELULAR S*/
+/*MOBILE S*/
 @media screen and (max-width: 600px) {
+    .hide-mobile-s{
+        display: none;
+    }
     .background-empresa {
         background-position: center;
     }
@@ -1487,8 +1490,11 @@ body.lock{
     }
 }
 
-/*CELULAR XS - TABLET SM*/
+/*MOBILE XS - TABLET SM*/
 @media screen and (max-width: 600px) {
+    .hide-mobile-xs, .hide-tablet-sm{
+        display: none;
+    }
     .background-empresa {
         background-position: center;
     }
@@ -1572,6 +1578,9 @@ body.lock{
 
 /*TABLET M - DESKTOP MS*/
 @media screen and (min-width: 600px) and (max-width: 800px){
+    .hide-tablet-m, .hide-dektop-ms{
+        display: none;
+    }
     .background-empresa {
         background-position: center;
     }
@@ -1579,6 +1588,9 @@ body.lock{
 
 /*TABLER XM - DESKTOP L*/
 @media screen and (min-width: 800px) and (max-width: 992px){
+    .hide-tablet-xm, .hide-dektop-l{
+        display: none;
+    }
     #materialize-component-left-menu-user,
     #fontawesome-component-left-menu-user {
         display: none;
@@ -1592,6 +1604,9 @@ body.lock{
 
 /*DESKTOP XL*/
 @media screen and (min-width: 992px) {
+    .hide-dektop-xl{
+        display: none;
+    }
     #materialize-component-left-menu-user,
     #fontawesome-component-left-menu-user {
         display: none;
