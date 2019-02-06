@@ -12,6 +12,7 @@ __author__ = "PhanterJR<junior.conex@gmail.com>"
 __version__ = "0.1.1"
 __project_folder__ = os.path.dirname(os.path.abspath(__file__))
 __project__ = os.path.basename(__project_folder__)
+__base_name__ = os.path.basename(__project_folder__)
 
 
 app = Flask(__name__)
