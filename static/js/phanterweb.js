@@ -1924,6 +1924,7 @@ var PhanterwebTables = function(table_name, data){
     MainThis.menuButtons = null;
     MainThis.fieldsSearch = null;
     MainThis._setList = function() {
+
         var lista = (isNotEmpty(MainThis.data[table_name])) ? MainThis.data[table_name] : [];
         var cont = 0;    
         for (var i = 0; i < lista.length; i++) {
@@ -1932,9 +1933,39 @@ var PhanterwebTables = function(table_name, data){
                 MainThis._setField();
             };
             cont++;
-            var html_r = $('<tr id="phanterwebtables-row-'+MainThis.table_name+'-'+lista[i].id+'" class="phanterwebtables-row" data-'+MainThis.table_name+'=\''+JSON.stringify(lista[i])+'\'></tr>')
+            var html_r = $('<tr id="phanterwebtables-row-'+MainThis.table_name+'-'+lista[i].id+'" class="phanterwebtables-row"></tr>')
+            $(html_r).attr("data-"+MainThis.table_name, JSON.stringify(lista[i]))
             for (var x in MainThis.fields) {
-                var html_f = $('<td id="phanterwebtables-field-'+x+'-'+lista[i].id+'" class="phanterwebtables-field">'+lista[i][x]+'</td>')
+                var data_table = lista[i][x];
+                if(typeof MainThis.fields[x] === 'string'){
+                    var type_data = 'string'
+                } else {
+                    if('type' in MainThis.fields[x]){
+                        var type_data = MainThis.fields[x].type
+                        if (type_data=='string'){
+                            if(data_table==null){
+                                data_table="";
+                            }
+                        }
+                        if (type_data=='boolean'){
+                            if(data_table==true){
+                                data_table='<div class="text-center"><i class="fas fa-check-square"></i></div>'
+                            } else{
+                                data_table='<div class="text-center"><i class="far fa-square"></i></div>'
+                            }
+                        }
+                        if ((type_data=='date')||(type_data=='datetime')){
+                            if(data_table==null){
+                                if(type_data=='datetime'){
+                                    data_table='__/__/____ __:__:__'
+                                } else{
+                                    data_table='__/__/____'
+                                }
+                            }
+                        }
+                    }
+                }
+                var html_f = $('<td id="phanterwebtables-field-'+x+'-'+lista[i].id+'" class="phanterwebtables-field">'+data_table+'</td>')
                 $(html_r).append(html_f);
             }
             if (MainThis.menuButtons!==null) {
@@ -1959,7 +1990,13 @@ var PhanterwebTables = function(table_name, data){
     MainThis._setField = function(){
         var html_r = $('<tr id="phanterwebtables-row-head-'+MainThis.table_name+'" class="phanterwebtables-row-head phanterwebtables-row"></tr>')
         for (var x in MainThis.fields) {
-            var html_f = $('<th id="phanterwebtables-field-'+x+'" class="phanterwebtables-field">'+MainThis.fields[x]+'</th>')
+            if(typeof MainThis.fields[x] === 'string'){
+                var html_f = $('<th id="phanterwebtables-field-'+x+'" class="phanterwebtables-field">'+MainThis.fields[x]+'</th>')
+            } else {
+                if('label' in MainThis.fields[x]){
+                    var html_f = $('<th id="phanterwebtables-field-'+x+'" class="phanterwebtables-field">'+MainThis.fields[x].label+'</th>')
+                }                
+            }
             $(html_r).append(html_f);
         }
         if (MainThis.menuButtons!==null) {
