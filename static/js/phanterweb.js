@@ -1918,27 +1918,35 @@ var phanterwebComponenteMenu = new function(){
         this.actionBtnMenuCmdSubMenu()
     }
 }();
-var PhanterwebTables = function(table_name, data){
+var PhanterwebTables = function(data){
     var MainThis = this;
     MainThis.map_search_bar = JSON.parse(phanterwebCacheDataJS.maps.map_search_bar)
-    MainThis.map_search_bar = MainThis.map_search_bar.split("§table_name§").join(table_name)
-    MainThis.table_name = table_name;
+    MainThis.map_search_bar = MainThis.map_search_bar.split("§table_name§").join(data.table)
+    MainThis.table_name = data.table;
+    MainThis.orderby = data.orderby
+    MainThis.field = data.field
+    MainThis.search = data.search
+    MainThis.reverse = data.reverse
     MainThis.fields = data.fields;
-    MainThis.t_html = $('<table id="'+table_name+'" class="phanterwebtables"></table>')
+    MainThis.t_html = $('<table id="'+data.table+'" class="phanterwebtables"></table>')
     MainThis.html = ""
+    MainThis._html_pagination = ""
     MainThis.data = data
     MainThis.menu = '<td class="phanterwebtables-field phanterwebtables-field-menu-td">\
-            <span class="dropdown-trigger link phanterwebtables-menu-button" data-target="dropdown_'+table_name+'_§id_name§">\
+            <span class="dropdown-trigger link phanterwebtables-menu-button" data-target="dropdown_'+data.table+'_§id_name§">\
                 <i class="material-icons">more_vert</i>\
             </span>\
-            <ul id="dropdown_'+table_name+'_§id_name§" class="dropdown-content phanterwebtables-menu-container">§menu_itens§</ul>\
+            <ul id="dropdown_'+data.table+'_§id_name§" class="dropdown-content phanterwebtables-menu-container">§menu_itens§</ul>\
         </td>'
-    MainThis.menu_li = '<li><span id="phanterwebtables-menu-item_'+table_name+'_§id_name§_§id_submenu_name§" class="phanterwebtables-menu-item phanterwebtables-menu-item_§id_submenu_name§" data-source="phanterwebtables-row-'+table_name+'-§id_name§">§label§</span></li>'
+    MainThis.menu_li = '<li><span id="phanterwebtables-menu-item_'+data.table+'_§id_name§_§id_submenu_name§" class="phanterwebtables-menu-item phanterwebtables-menu-item_§id_submenu_name§" data-source="phanterwebtables-row-'+data.table+'-§id_name§">§label§</span></li>'
     MainThis.menuButtons = null;
     MainThis.fieldsSearch = null;
+    if("search_fields" in data){
+        MainThis.fieldsSearch = data.search_fields
+    }
     MainThis._setList = function() {
 
-        var lista = (isNotEmpty(MainThis.data[table_name])) ? MainThis.data[table_name] : [];
+        var lista = (isNotEmpty(MainThis.data[MainThis.table_name])) ? MainThis.data[MainThis.table_name] : [];
         var cont = 0;    
         for (var i = 0; i < lista.length; i++) {
             var row = lista[i];
@@ -1978,7 +1986,11 @@ var PhanterwebTables = function(table_name, data){
                         }
                     }
                 }
-                var html_f = $('<td id="phanterwebtables-field-'+x+'-'+lista[i].id+'" class="phanterwebtables-field phanterwebtables-field-'+x+'">'+data_table+'</td>')
+                var is_active = ""
+                if(x===MainThis.orderby){
+                    is_active = " orderby-active"
+                }
+                var html_f = $('<td id="phanterwebtables-field-'+x+'-'+lista[i].id+'" class="phanterwebtables-field phanterwebtables-field-'+x+is_active+'">'+data_table+'</td>')
                 $(html_r).append(html_f);
             }
             if (MainThis.menuButtons!==null) {
@@ -1999,6 +2011,9 @@ var PhanterwebTables = function(table_name, data){
         if(cont==0){
             $(MainThis.t_html).append("<tr><th class=\"espera_container\">\"Não há registros\"</th></tr>")
         }
+        MainThis.map_search_bar.find("#phanterwebtable-table-container-"+MainThis.table_name).html(MainThis.t_html)
+        MainThis.pagination()
+        MainThis.map_search_bar.append(MainThis._html_pagination)
     };
     MainThis._setField = function(){
         var html_r = $('<tr id="phanterwebtables-row-head-'+MainThis.table_name+'" class="phanterwebtables-row-head phanterwebtables-row"></tr>')
@@ -2007,7 +2022,15 @@ var PhanterwebTables = function(table_name, data){
                 var html_f = $('<th id="phanterwebtables-field-'+x+'" class="phanterwebtables-field">'+MainThis.fields[x]+'</th>')
             } else {
                 if('label' in MainThis.fields[x]){
-                    var html_f = $('<th id="phanterwebtables-field-'+x+'" class="phanterwebtables-field">'+MainThis.fields[x].label+'</th>')
+                    var is_active = ""
+                    if(x===MainThis.orderby){
+                        is_active = " active"
+                    }
+                    if(MainThis.reverse==true){
+                    } else {
+                        is_active+=" reverse"
+                    }
+                    var html_f = $('<th id="phanterwebtables-field-'+x+'" class="phanterwebtables-field phanterwebtables-field-head'+is_active+'" data-orderby="'+x+'">'+MainThis.fields[x].label+'</th>')
                 }                
             }
             $(html_r).append(html_f);
@@ -2023,35 +2046,98 @@ var PhanterwebTables = function(table_name, data){
         }
         MainThis.menuButtons.push([id_submenu_name, label])
     };
-    MainThis.init = function(lista){
+    MainThis.init = function(data){
+        var data = (typeof data !== 'undefined') ? data : "";
+        if(data!==""){
+            MainThis.data = data
+            MainThis.fields = data.fields;
+            MainThis.fieldsSearch = null;
+            if("search_fields" in data){
+                MainThis.fieldsSearch = data.search_fields
+            }
+        }
+        MainThis.map_search_bar = $(MainThis.map_search_bar)
         MainThis._setList();
 
-        MainThis.map_search_bar = $(MainThis.map_search_bar)
-        MainThis.map_search_bar.find("#phanterwebtable-table-container-"+table_name).html(MainThis.t_html)
         MainThis.html = MainThis.map_search_bar
         if (MainThis.fieldsSearch===null){
             cont=0
             for (var x in MainThis.fields) {
-                var el_option = new Option(x, MainThis.fields[x]);
-                if(cont == 0){
-                    $(el_option).attr("selected", "selected")
-                };
-                MainThis.map_search_bar.find("#materialize-select-search-"+table_name).append(el_option);
+                if(typeof MainThis.fields[x] === 'string'){
+                    var el_option = new Option(MainThis.fields[x], MainThis.fields[x]);
+                } else {
+                    if('label' in MainThis.fields[x]){
+                        var el_option = new Option(MainThis.fields[x].label, x);
+                    }
+                }
+                if(isNotEmpty(MainThis.field)){
+                    if(MainThis.field==x){
+                        $(el_option).attr("selected", "selected")    
+                    }
+                }
+                MainThis.map_search_bar.find("#materialize-select-search-"+MainThis.table_name).append(el_option);
                 cont++
             }
             
         } else {
             cont=0
             for (var x in MainThis.fieldsSearch) {
-                var el_option= new Option(x, MainThis.fieldsSearch[x]);
-                if(cont == 0){
-                    $(el_option).attr("selected", "selected")
-                };
-                MainThis.map_search_bar.find("#materialize-select-search-"+table_name).append(el_option);
+                if(typeof MainThis.fieldsSearch[x] === 'string'){
+                    var el_option = new Option(MainThis.fieldsSearch[x], MainThis.fieldsSearch[x]);
+                } else {
+                    if('label' in MainThis.fieldsSearch[x]){
+                        var el_option = new Option(MainThis.fieldsSearch[x].label, x);
+                    }
+                }
+                if(isNotEmpty(MainThis.field)){
+                    if(MainThis.field==x){
+                        $(el_option).attr("selected", "selected")    
+                    }
+                }
+                MainThis.map_search_bar.find("#materialize-select-search-"+MainThis.table_name).append(el_option);
                 cont++
-            }  
+            }
         }
+        MainThis.map_search_bar.find("#materialize-searchbar-input-"+MainThis.table_name).val(MainThis.search)
         return $(MainThis.html)
+    }
+    MainThis.pagination = function(){
+        var html_page = "";
+        if("page_length" in MainThis.data){
+            var page_length = MainThis.data.page_length
+            var current_page = 1;
+            if("page" in  MainThis.data){
+                if(isNotEmpty(MainThis.data.page)){
+                    current_page = MainThis.data.page
+                }
+            }
+            if (page_length>1){
+                html_page = $('<div class="phanterwebtables-pagination pagination"></div>')
+                var botao_left = $('<li class="waves-effect phanterwebtables-pagination-button-'+MainThis.table_name+'" id="phanterwebtables-pagination-left-'+MainThis.table_name+'"><span><i class="material-icons">chevron_left</i></span></li>')
+                if(current_page==1){
+                    $(botao_left).addClass("disabled").removeClass('waves-effect').removeClass('phanterwebtables-pagination-button-'+MainThis.table_name)
+                } else {
+                    $(botao_left).attr("data-page", parseInt(current_page)-1)
+                }
+                $(html_page).append(botao_left)
+                for (var i = 0; i < page_length; i++) {
+                    pagina_atual = i + 1
+                    var botao_page = $('<li class="waves-effect phanterwebtables-pagination-button-'+MainThis.table_name+'" id="phanterwebtables-pagination-page-'+pagina_atual+'-'+MainThis.table_name+'" data-page="'+pagina_atual+'"><span>'+pagina_atual+'</span></li>')
+                    if(current_page==pagina_atual){
+                        $(botao_page).addClass("active")
+                    }   
+                    $(html_page).append(botao_page)
+                }
+                var botao_right = $('<li class="waves-effect phanterwebtables-pagination-button-'+MainThis.table_name+'" id="phanterwebtables-pagination-right-'+MainThis.table_name+'"><span><i class="material-icons">chevron_right</i></span></li>')
+                if(current_page==page_length){
+                    $(botao_right).addClass("disabled").removeClass('waves-effect').removeClass('phanterwebtables-pagination-button-'+MainThis.table_name)
+                } else {
+                    $(botao_right).attr("data-page", parseInt(current_page)+1)
+                }             
+                $(html_page).append(botao_right)
+            }
+        }
+        MainThis._html_pagination = html_page
     }
 };
 var PhanterwebPages = function(){
