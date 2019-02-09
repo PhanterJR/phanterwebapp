@@ -345,6 +345,9 @@ function createStringArrayFromListObjData(listObjData){
 $.fn.phanterwebSelects = function(listobjselect, select_selecionado){
     var select_selecionado = (typeof select_selecionado !== 'undefined') ? select_selecionado : null;
     if(Array.isArray(listobjselect)){
+        if(isNotEmpty(select_selecionado)){
+            listobjselect=setArrays(listobjselect, [select_selecionado])
+        }
         var cont = 0;
         for (var i = 0; i < listobjselect.length; i++) {
             var el_option = new Option(listobjselect[i], listobjselect[i]);
