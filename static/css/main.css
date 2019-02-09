@@ -34,9 +34,6 @@ body.lock{
     background-color: #6e6e6e !important;
     color: white;
 }
-.phanterwebtables-pagination {
-    text-align: center;
-}
 .pagination li.active {
     background-color: #added0;
 }
@@ -46,6 +43,10 @@ body.lock{
     font-size: 1.2rem;
     padding: 0 10px;
     line-height: 30px;
+}
+.phanterwebtables-pagination {
+    text-align: center;
+    padding: 10px;
 }
   main {
     flex: 1 0 auto;
