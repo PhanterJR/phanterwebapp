@@ -23,6 +23,10 @@ body.lock{
     padding-top: 10px;
     padding-bottom: 20px;
 }
+.phanterwebtables th, .phanterwebtables td {
+    padding: 5px 10px;
+    white-space: nowrap;
+}
   main {
     flex: 1 0 auto;
   }
