@@ -1978,7 +1978,7 @@ var PhanterwebTables = function(table_name, data){
                         }
                     }
                 }
-                var html_f = $('<td id="phanterwebtables-field-'+x+'-'+lista[i].id+'" class="phanterwebtables-field">'+data_table+'</td>')
+                var html_f = $('<td id="phanterwebtables-field-'+x+'-'+lista[i].id+'" class="phanterwebtables-field phanterwebtables-field-'+x+'">'+data_table+'</td>')
                 $(html_r).append(html_f);
             }
             if (MainThis.menuButtons!==null) {
