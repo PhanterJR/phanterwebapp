@@ -12,7 +12,7 @@ from ..models.phantergallery import UserImage
 from phanterweb.validators import ValidateReqArgs
 from phanterweb.phantergallery import PhanterGalleryCutter
 from phanterweb.captcha import Captcha
-from phanterweb.db_date_datetime import conv_datetime
+from phanterweb.db_date_datetime import conv_datetime, conv_date
 from flask import request, url_for, Markup, send_from_directory
 from flask_restful import Resource, reqparse
 from functools import wraps
@@ -424,6 +424,20 @@ def process_datetime(value):
             ])
         )
         return None
+
+
+def process_generic_data(value, datastr="%d/%m/%Y"):
+    if value is None:
+        return None
+    elif isinstance(value, (bool, list, dict, int, tuple, float)):
+        return value
+    elif isinstance(value, str):
+        return Markup(value)
+    elif isinstance(value, datetime):
+        conv_date(value, datastr)
+    else:
+        value = str(value)
+        return Markup(str(value))
 
 
 class RestApi(Resource):
