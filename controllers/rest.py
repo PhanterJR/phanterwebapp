@@ -429,15 +429,15 @@ def process_datetime(value):
 def process_generic_data(value, datastr="%d/%m/%Y"):
     if value is None:
         return None
-    elif isinstance(value, (bool, list, dict, int, tuple, float)):
+    elif isinstance(value, (bool, list, dict, int, tuple, float, Markup)):
         return value
     elif isinstance(value, str):
-        return Markup(value)
+        return Markup.escape(value)
     elif isinstance(value, datetime):
         conv_date(value, datastr)
     else:
         value = str(value)
-        return Markup(str(value))
+        return Markup.escape(str(value))
 
 
 class RestApi(Resource):
