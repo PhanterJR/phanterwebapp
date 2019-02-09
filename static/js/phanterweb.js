@@ -342,11 +342,17 @@ function createStringArrayFromListObjData(listObjData){
     return stringinput
 };
 //phnaterselects
-$.fn.phanterwebSelects = function(listobjselect, select_selecionado){
+$.fn.phanterwebSelects = function(listobjselect, select_selecionado, can_empty){
     var select_selecionado = (typeof select_selecionado !== 'undefined') ? select_selecionado : null;
+    var can_empty = (typeof select_selecionado !== 'undefined') ? true : false;
     if(Array.isArray(listobjselect)){
         if(isNotEmpty(select_selecionado)){
             listobjselect=setArrays(listobjselect, [select_selecionado])
+        }
+        if(can_empty){
+            if(listobjselect.indexOf("")<0){
+                listobjselect=setArrays([""], [select_selecionado])
+            }
         }
         var cont = 0;
         for (var i = 0; i < listobjselect.length; i++) {
@@ -366,6 +372,10 @@ $.fn.phanterwebSelects = function(listobjselect, select_selecionado){
         }
     } else if(typeof listobjselect === "object"){
         var cont = 0;
+        if(can_empty){
+            var el_option = new Option("", "");
+            $(this).append(el_option)
+        }
         for (var x in listobjselect) {
             var el_option = new Option(x, listobjselect[x]);
             var input_target = (typeof $(this).attr("target_input") !== 'undefined') ? $(this).attr("target_input") : null;
