@@ -27,6 +27,26 @@ body.lock{
     padding: 5px 10px;
     white-space: nowrap;
 }
+.phanterwebtables tr:nth-child(2n+1) {
+    background-color: #ddd;
+}
+.phanterwebtables-row-head {
+    background-color: #6e6e6e !important;
+    color: white;
+}
+.phanterwebtables-pagination {
+    text-align: center;
+}
+.pagination li.active {
+    background-color: #added0;
+}
+.pagination li span {
+    color: #444;
+    display: inline-block;
+    font-size: 1.2rem;
+    padding: 0 10px;
+    line-height: 30px;
+}
   main {
     flex: 1 0 auto;
   }
