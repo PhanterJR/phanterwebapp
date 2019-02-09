@@ -44,6 +44,21 @@ body.lock{
     padding: 0 10px;
     line-height: 30px;
 }
+.pagination li.disabled span i {
+    color: #d7d7d7 !important;
+}
+.phanterwebtables-field-head {
+    cursor: pointer;
+}
+.phanterwebtables-field-head:hover {
+    color: orange;
+}
+.phanterwebtables-field-head.active{
+    color: #3ae93a;
+}
+.phanterwebtables-field.orderby-active {
+    color: green;
+}
 .phanterwebtables-pagination {
     text-align: center;
     padding: 10px;
