@@ -150,7 +150,7 @@ def requires_login(
                             activated = True
                         else:
                             activated = False
-                        email = Markup.escape(usuario.email)
+                        email = process_generic_data(usuario.email)
                         is_to_remember = True if usuario.remember_me else False
                         user_roles = ["user"]
                         if usuario.roles:
@@ -159,8 +159,8 @@ def requires_login(
                                 user_roles.append("user")
                         user_image = UserImage(usuario.id)
                         url_image_user = user_image.url_image
-                        first_name = Markup.escape(usuario.first_name)
-                        last_name = Markup.escape(usuario.last_name)
+                        first_name = process_generic_data(usuario.first_name)
+                        last_name = process_generic_data(usuario.last_name)
                         user_name = "%s %s" % (first_name, last_name)
                         if usuario.roles:
                             if "administrator" in usuario.roles:
@@ -728,19 +728,19 @@ class RestImageUser(Resource):
                 "user.png"
             )
 
+
 class RestUsers(Resource):
 
     @requires_login()
     def get(self, *args, **kargs):
         usuario = kargs['usuario']
-        token = kargs['token']
         if usuario:
-            user_name = Markup.escape("%s %s" % (usuario.first_name, usuario.last_name))
+            user_name = process_generic_data("%s %s" % (usuario.first_name, usuario.last_name))
             if usuario.activated:
                 activated = True
             else:
                 activated = False
-            email = Markup.escape(usuario.email)
+            email = process_generic_data(usuario.email)
             is_to_remember = True if usuario.remember_me else False
             user_roles = ["user"]
             if usuario.roles:
@@ -749,8 +749,8 @@ class RestUsers(Resource):
                     user_roles.append("user")
             user_image = UserImage(usuario.id)
             url_image_user = user_image.url_image
-            first_name = Markup.escape(usuario.first_name)
-            last_name = Markup.escape(usuario.last_name)
+            first_name = process_generic_data(usuario.first_name)
+            last_name = process_generic_data(usuario.last_name)
             user_role = "Usuário"
             if usuario.roles:
                 if "administrator" in usuario.roles:
@@ -837,14 +837,14 @@ class RestUsers(Resource):
                         'message': 'Usuário criado com sucesso!',
                         'auth_user': {
                             'id': new_user.id,
-                            'user_name': Markup.escape("%s %s" % (first_name, last_name)),
-                            'first_name': Markup.escape(first_name),
-                            'last_name': Markup.escape(last_name),
+                            'user_name': process_generic_data("%s %s" % (first_name, last_name)),
+                            'first_name': process_generic_data(first_name),
+                            'last_name': process_generic_data(last_name),
                             'url_image_user': url_image_user,
                             'remember_me': is_to_remember,
                             'role': user_role,
                             'roles': user_roles,
-                            'email': Markup.escape(email),
+                            'email': process_generic_data(email),
                         }
                     }
                 else:
@@ -979,9 +979,9 @@ class RestUsers(Resource):
                     if "user" not in user_roles:
                         user_roles.append("user")
                 is_to_remember = usuario.remember_me
-                email = Markup.escape(usuario.email)
-                first_name = Markup.escape(usuario.first_name)
-                last_name = Markup.escape(usuario.last_name)
+                email = process_generic_data(usuario.email)
+                first_name = process_generic_data(usuario.first_name)
+                last_name = process_generic_data(usuario.last_name)
                 username = "%s %s" % (first_name, last_name)
                 return {
                     "status": "OK",
@@ -1306,7 +1306,7 @@ class RestServerInfo(Resource):
         minuto = str(nova_data.minute).zfill(2)
         return {
             'status': 'OK',
-            'hora_servidor': "%s/%s/%s %s:%s:00" %
+            'server_hour': "%s/%s/%s %s:%s:00" %
             (dia, mes, ano, hora, minuto),
             'application': {
                 'debug': app.debug,
@@ -1437,11 +1437,11 @@ class RestAuthenticater(Resource):
                         'activated': activated,
                         'temporary_password': temporary_password,
                         'auth_user': {
-                            'id': (usuario.id),
-                            'email': Markup.escape(email),
-                            'user_name': Markup.escape(user_name),
-                            'first_name': Markup.escape(first_name),
-                            'last_name': Markup.escape(last_name),
+                            'id': usuario.id,
+                            'email': process_generic_data(email),
+                            'user_name': process_generic_data(user_name),
+                            'first_name': process_generic_data(first_name),
+                            'last_name': process_generic_data(last_name),
                             'url_image_user': url_image_user,
                             'remember_me': is_to_remember,
                             'role': user_role,
